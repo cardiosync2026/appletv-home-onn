@@ -211,7 +211,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private int pickIndex, heroSlide = 1;
     private Hero hero, heroFrom;
     private long heroFadeAt, bgFadeAt;
-    private final Spring heroFocus = new Spring(0.28f, 0.85f, 0);
+    private final Spring heroFocus = new Spring(0.2f, 0.86f, 0);
     private final RectF heroButton = new RectF();
     private Backdrop bgFrom, bgTo;     // null = gradient (no photo)
     private final int[] frostMix = new int[Backdrop.FW * Backdrop.FH];
@@ -222,15 +222,15 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private Spring[] drawerFocus = new Spring[0];
     private RectF[] drawerRects = new RectF[0];
     private final RectF weatherCard = new RectF(), quotesCard = new RectF();
-    private final Spring drawer = new Spring(0.46f, 0.92f, 0);
-    private boolean drawerOpen;
+    private final Spring drawer = new Spring(0.3f, 0.94f, 0);   // snappier: 0.46 felt late on the remote
+    private boolean drawerOpen, drawerVeil;
     private int drawerIndex;
 
     // "All Apps" sheet
     private List<HomeApps.Item> others = new ArrayList<>();
     private Spring[] gridFocus = new Spring[0];
     private String[] gridLabels;
-    private final Spring sheet = new Spring(0.38f, 0.9f, 0);
+    private final Spring sheet = new Spring(0.28f, 0.92f, 0);
     private final Spring scroll = new Spring(0.34f, 1f, 0);
     private final RectF focusedCell = new RectF();
     private boolean sheetOpen, shelfEdited;
@@ -322,6 +322,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             this.kind = kind;
         }
 
+        /** Fading a layer (the drawer, the top) then needs no offscreen copy per frame: on the onn's GPU that was most of a frame. */
+        @Override public boolean hasOverlappingRendering() {
+            return false;
+        }
+
         @Override protected void onDraw(Canvas c) {
             if (labelPaint == null) return;
             c.translate(-getLeft(), -getTop());
@@ -410,6 +415,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         platter = new Layer(a, PLATTER);
         tiles = new Layer(a, TILES);
         drawerLayer = new Layer(a, DRAWER);
+
         sheetLayer = new Layer(a, SHEET);
         toastLayer = new Layer(a, TOAST);
         // Hardware layers on the GPU: only the one that changed is redrawn; moving, fading and scaling stay cheap.
@@ -424,11 +430,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         setContentDescription("Free My TV");
         drawerLayer.setVisibility(INVISIBLE);
         for (int i = 0; i < topFocus.length; i++) {
-            topFocus[i] = new Spring(0.26f, 0.85f, 0);
+            topFocus[i] = new Spring(0.2f, 0.86f, 0);
             topRects[i] = new RectF();
         }
         for (int i = 0; i < 3; i++) {
-            cardFocus[i] = new Spring(0.32f, 0.78f, 0);
+            cardFocus[i] = new Spring(0.24f, 0.82f, 0);
             cardRects[i] = new RectF();
         }
         setLightButtons(HomeApps.topButtons());
@@ -761,13 +767,15 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         // glass shows the background where it ended up.
         if (tilesMoving || tilesDirty) {
             tiles.invalidate();
-            if (!picksOn()) heroLayer.invalidate();   // the focused app's name above the dock follows the tiles
         }
         if (statusMoving || statusDirty || bgFading) status.invalidate();
         if (heroMoving || heroDirty || heroFading) heroLayer.invalidate();
-        if (drawerItemsMoving || drawerDirty || bgFading || drawerMoving) drawerLayer.invalidate();
+        if (drawerItemsMoving || drawerDirty || bgFading) drawerLayer.invalidate();
         if (gridMoving || gridDirty) sheetLayer.invalidate();
-        if (drawerMoving || bgFading) sky.invalidate();
+        if (bgFading || drawerVeil != drawerOpen) {   // the background's veil changes once per open/close, not every frame
+            drawerVeil = drawerOpen;
+            sky.invalidate();
+        }
         if (bgFading || (drawerWasMoving && !drawerMoving)) platter.invalidate();
         drawerWasMoving = drawerMoving;
         tilesDirty = statusDirty = heroDirty = drawerDirty = gridDirty = motionDirty = false;
@@ -1219,7 +1227,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             statusRects = new RectF[list.size()];
             int index = Math.min(statusIndex, Math.max(0, list.size() - 1));
             for (int i = 0; i < statusFocus.length; i++) {
-                statusFocus[i] = new Spring(0.26f, 0.85f, 0);
+                statusFocus[i] = new Spring(0.2f, 0.86f, 0);
                 statusRects[i] = new RectF();
                 if (list.get(i).key.equals(focusedKey)) index = i;   // a device came on: keep focus on the same button
             }
@@ -1276,8 +1284,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             tileSlide = new Spring[list.size()];
             tileRects = new RectF[list.size()];
             for (int i = 0; i < tileFocus.length; i++) {
-                tileFocus[i] = new Spring(0.34f, 0.74f, 0);
-                tileSlide[i] = new Spring(0.32f, 0.86f, 0);
+                tileFocus[i] = new Spring(0.24f, 0.8f, 0);
+                tileSlide[i] = new Spring(0.24f, 0.88f, 0);
                 tileRects[i] = new RectF();
             }
             shelfIndex = Math.min(shelfIndex, Math.max(0, list.size() - 1));
@@ -1438,6 +1446,14 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float on = 0;
         for (int i = 0; i < shelf.size(); i++) on += Math.max(0, tileFocus[i].value);
         shelfOn = Math.min(1, on);
+        // As on Apple TV's top shelf: the focused app's name, large, above the dock (in this layer: moving along the
+        // shelf then redraws only the tiles, not the whole top).
+        if (!picksOn() && shelfOn > 0.01f && zone == Z_SHELF && shelfIndex >= 0 && shelfIndex < shelf.size()) {
+            String name = shelf.get(shelfIndex).label;
+            lAppName.setColor(tone(L_INK, WHITE));
+            lAppName.setAlpha(Math.round(255 * shelfOn));
+            c.drawText(name, MARGIN * k - Ui.leftBearing(lAppName, name), (L_PLATTER_TOP - 22) * k, lAppName);
+        }
         // The whole shelf shows it has the focus too: a rim just outside its glass (dark by day: white wouldn't show on
         // white glass). Here and not on the glass's layer, which only changes with the background.
         if (false && shelfOn > 0.01f && !shelf.isEmpty()) {
@@ -1650,7 +1666,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             drawerFocus = new Spring[list.size()];
             drawerRects = new RectF[list.size()];
             for (int i = 0; i < drawerFocus.length; i++) {
-                drawerFocus[i] = new Spring(0.28f, 0.85f, 0);
+                drawerFocus[i] = new Spring(0.2f, 0.86f, 0);
                 drawerRects[i] = new RectF();
             }
             drawerIndex = Math.min(drawerIndex, Math.max(0, list.size() - 1));
@@ -1790,14 +1806,12 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float f = Ui.clamp(drawerFocus[i].value), s = 1 + 0.07f * f;
         RectF base = drawerRects[i];
         // Opening, the buttons rise one after another (a short cascade, as Apple's menus do).
-        float rise = Ui.clamp(drawer.value * 1.5f - i * 0.07f), lift = (1 - rise) * (1 - rise) * 60 * k;
-        float cx = base.centerX(), cy = base.centerY() + lift;
-        int saveAlpha = c.saveLayerAlpha(null, Math.round(255 * Ui.clamp(rise * 1.4f)));
+        float lift = 0;   // the drawer slides up as one layer: redrawing every button's glass per frame dropped frames
+        float cx = base.centerX(), cy = base.centerY() + lift;   // only a lift: an alpha layer per button cost 70 ms a frame
         cell.set(cx - base.width() * s / 2, cy - base.height() * s / 2, cx + base.width() * s / 2, cy + base.height() * s / 2);
         float r = 20 * k * s;
         if (it.kind == HomeApps.RESUME) {
             drawResumeCard(c, it, f, r);
-            c.restoreToCount(saveAlpha);
             return;
         }
         if (f > 0.01f) {
@@ -1825,7 +1839,6 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         String label = TextUtils.ellipsize(it.label, fitPaint, room, TextUtils.TruncateAt.END).toString();
         c.drawText(label, cx, cell.top + cell.height() * 0.8f, drawerLabel);
         drawerLabel.setTextSize(23 * k);
-        c.restoreToCount(saveAlpha);
     }
 
     /** A "Continuar viendo" card: the title's picture, a dark fade at the bottom and its name; focused, a white rim. */
@@ -2113,7 +2126,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private void setOthers(List<HomeApps.Item> list) {
         others = list;
         gridFocus = new Spring[list.size()];
-        for (int i = 0; i < gridFocus.length; i++) gridFocus[i] = new Spring(0.3f, 0.82f, 0);
+        for (int i = 0; i < gridFocus.length; i++) gridFocus[i] = new Spring(0.22f, 0.84f, 0);
         gridLabels = null;
         gridIndex = Math.min(gridIndex, Math.max(0, list.size() - 1));
         retargetGrid(true);
@@ -3222,7 +3235,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float e = bgFadeAt == 0 ? 1 : fadeEase(bgFadeAt, up);
         boolean fading = bgFadeAt != 0;
         // Drawer open: the background lightens (by day) or darkens (at night), as a filter on the drawing itself.
-        android.graphics.ColorFilter v = veil(tone(0.32f, 0.42f) * Ui.clamp(drawer.value), blend(0xFFFFFFFF, 0xFF000000, night));
+        android.graphics.ColorFilter v = veil(tone(0.32f, 0.42f) * (drawerOpen ? 1 : 0), blend(0xFFFFFFFF, 0xFF000000, night));
         if (bgTo == null || (fading && bgFrom == null)) {
             if (apple()) {
                 // Apple TV mode while the first photo downloads: dark, like the photos, never a white flash.
@@ -3272,13 +3285,6 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             return;
         }
         if (!picksOn()) {
-            // As on Apple TV's top shelf: the focused app's name, large, above the dock.
-            if (!picksOn() && shelfOn > 0.01f && zone == Z_SHELF && shelfIndex >= 0 && shelfIndex < shelf.size()) {
-                String name = shelf.get(shelfIndex).label;
-                lAppName.setColor(tone(L_INK, WHITE));
-                lAppName.setAlpha(Math.round(255 * shelfOn));
-                c.drawText(name, MARGIN * k - Ui.leftBearing(lAppName, name), (L_PLATTER_TOP - 22) * k, lAppName);
-            }
             drawClock(c);
             if (HomeData.coinCount() > 0) drawQuotes(c);
             return;
