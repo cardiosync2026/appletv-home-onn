@@ -239,7 +239,7 @@ final class Recs {
 
     /** The pick's ready backdrop (or null: builds it in the background and notifies when it's ready). */
     Backdrop backdrop(Pick p) {
-        if (p == null || p.backdrop == null) return null;
+        if (p == null || p.backdrop == null || Prefs.lite()) return null;
         final String key = p.backdrop;    // the details may swap the image midway
         synchronized (images) {
             Backdrop b = images.get(key);
@@ -275,6 +275,12 @@ final class Recs {
 
     List<Pick> feed() { return feed; }
 
+    /** Modo ligero turned on: the photos and logos in memory go now. */
+    void dropImages() {
+        synchronized (images) { images.clear(); }
+        synchronized (logos) { logos.clear(); }
+    }
+
     // MARK: - Title logos (TMDB's official artwork: Spanish first, then English, then language-free)
 
     private final Map<Integer, Bitmap> logos = new HashMap<>();
@@ -282,7 +288,7 @@ final class Recs {
 
     /** The title's logo, ready to draw, or null (still loading, or the title has none: then the text is drawn). */
     Bitmap logo(Pick p) {
-        if (p == null || p.id == 0 || p.kind == null) return null;
+        if (p == null || p.id == 0 || p.kind == null || Prefs.lite()) return null;
         int key = "tv".equals(p.kind) ? -p.id : p.id;
         synchronized (logos) {
             if (logos.containsKey(key)) return logos.get(key);
@@ -472,6 +478,7 @@ final class Recs {
     }
 
     void refreshIfStale() {
+        if (Prefs.lite()) return;     // Modo ligero: nothing is fetched
         if (hasKey(context)) refreshFeedIfStale();
         if (!hasKey(context) || fetching) return;
         long now = System.currentTimeMillis();

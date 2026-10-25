@@ -1877,7 +1877,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         Bitmap cached = it.number == null ? null : resumeArt.get(it.number);
         if (cached != null && it.tile == null) it.setTile(cached);
         String key = it.number;
-        if (it.tile != null || key == null || !resumeLoading.add(key)) return;
+        if (Prefs.lite() || it.tile != null || key == null || !resumeLoading.add(key)) return;
         String known = it.art, ref = it.number;
         LOADER.execute(() -> {
             String art = known;
@@ -3181,7 +3181,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         for (Recs.Pick p : recs.wanted()) recs.backdrop(p);   // all three tabs preloaded: switching tabs is instant
         // Picks bring their own background; without them (no TMDB key), your photo if there is one.
         boolean own = !picksOn() && Photos.on(getContext());
-        Backdrop b = own ? Photos.backdrop(getContext(), ownReady) : cards.isEmpty() ? null : recs.backdrop(apple() ? heroPick() : cards.get(0));
+        Backdrop b = Prefs.lite() ? null : own ? Photos.backdrop(getContext(), ownReady) : cards.isEmpty() ? null : recs.backdrop(apple() ? heroPick() : cards.get(0));
+        if (Prefs.lite()) {
+            if (bgTo != null) showBackdrop(null);   // Modo ligero: back to the plain background
+            shownPick = null;
+        }
         if (apple() && b != null) shownPick = heroPick();
         if (apple()) {
             // The next two photos, downloaded and built ahead: even the first change is instant.
@@ -3371,7 +3375,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     }
 
     private boolean picksOn() {
-        return Recs.hasKey(getContext());
+        return Recs.hasKey(getContext()) && !Prefs.lite();
     }
 
     /**

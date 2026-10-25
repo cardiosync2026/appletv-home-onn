@@ -220,6 +220,10 @@ final class Prefs {
 
     static void setTmdbKey(String key) { put("tmdb_key", key.trim()); }
 
+    /** Modo ligero: the same look without photos, logos or downloads (the clock instead of the backdrop). */
+    static boolean lite() { return sp().getBoolean("lite", false); }
+    static void setLite(boolean on) { put("lite", on); }
+
     static void setShelf(List<String> packages) {
         StringBuilder sb = new StringBuilder();
         for (String p : packages) sb.append(sb.length() == 0 ? "" : ",").append(p);

@@ -41,6 +41,7 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
   - **YouTube without ads.** Installs [SmartTube](https://github.com/yuliskov/SmartTube), an open-source YouTube
     client for TV with no ads that skips sponsor segments, and puts it on the shelf in YouTube's place. Switch it off
     and YouTube comes back. SmartTube isn't YouTube's official app.
+- **Lite mode** (Settings): the same look without photos, logos or downloads, with the big clock in place of the backdrop. The home screen uses about 96 MB instead of 162 MB, which is less than Google TV's own home (135 MB).
 - **Light, full-width settings menu** in Apple TV's light style.
 - **Removed:** the weather and crypto cards, the promo rows and the clutter.
 
@@ -189,6 +190,7 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
   - **YouTube sin anuncios.** Instala [SmartTube](https://github.com/yuliskov/SmartTube), un cliente de YouTube para
     TV de código abierto, sin anuncios y que salta los patrocinios, y lo pone en el estante en lugar de YouTube. Si lo
     apagas, YouTube vuelve. SmartTube no es la app oficial de YouTube.
+- **Modo ligero** (Ajustes): la misma estética sin fotos, logos ni descargas, con el reloj grande en lugar del fondo. El inicio usa unos 96 MB en vez de 162 MB, menos que el inicio de Google TV (135 MB).
 - **Menú de ajustes claro y de ancho completo**, en el estilo claro de Apple TV.
 - **Se quitó:** las tarjetas del clima y de criptomonedas, las filas de promociones y el desorden.
 
