@@ -1625,14 +1625,16 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     // MARK: - Bottom drawer
 
     private static List<HomeApps.Item> drawerList(Context c) {
-        List<HomeApps.Item> list = HomeApps.allInputs(c);
+        List<HomeApps.Item> list = HomeApps.resume(c);   // "Continuar viendo" first
+        list.addAll(HomeApps.allInputs(c));
         list.addAll(HomeApps.drawerShortcuts(c));
         return list;
     }
 
     private void setDrawerItems(List<HomeApps.Item> list) {
         int inputs = 0;
-        while (inputs < list.size() && (list.get(inputs).kind == HomeApps.INPUT || list.get(inputs).kind == HomeApps.LIVE_TV)) inputs++;
+        while (inputs < list.size() && (list.get(inputs).kind == HomeApps.INPUT || list.get(inputs).kind == HomeApps.LIVE_TV
+                || list.get(inputs).kind == HomeApps.RESUME)) inputs++;
         boolean same = list.size() == drawerItems.size();
         for (int i = 0; same && i < list.size(); i++) {
             same = list.get(i).key.equals(drawerItems.get(i).key) && list.get(i).connected == drawerItems.get(i).connected;
@@ -1744,7 +1746,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         dayLow.setColor(tone(L_DIM, 0xADFFFFFF));
         pricePaint.setColor(drawerInk(0.95f));
         float titleBase = drawerRects.length > 0 ? drawerRects[0].top - 26 * k : ROW_TITLE * k;
-        if (drawerInputs > 0) c.drawText(Ui.tr("Inputs"), drawerRects[0].left + 4 * k, titleBase, rowTitle);
+        if (drawerInputs > 0) c.drawText(drawerItems.get(0).kind == HomeApps.RESUME ? "Continuar viendo" : Ui.tr("Inputs"),
+                drawerRects[0].left + 4 * k, titleBase, rowTitle);
         if (drawerInputs < drawerItems.size()) c.drawText(Ui.tr("Shortcuts"), drawerRects[drawerInputs].left + 4 * k, titleBase, rowTitle);
         int top = -1;
         for (int i = 0; i < drawerItems.size(); i++) if (drawerFocus[i].value > 0.02f && (top < 0 || drawerFocus[i].value > drawerFocus[top].value)) top = i;
@@ -2481,7 +2484,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 // Everything opens in Stremio, searching for the title (it finds it in Spanish too).
                 Recs.Pick p = shownPick != null ? shownPick : heroPick();
                 if (p == null) return;
-                recs.remember(p);
+                boolean viaApp = heroBtn == 0 && AppSearch.label(getContext()) != null;
+                recs.remember(p, viaApp ? "app" : "stremio");
+                setDrawerItems(drawerList(getContext()));
                 if (heroBtn == 0 && AppSearch.label(getContext()) != null) {
                     click.open();
                     AppSearch.run(getContext(), p.title, this::showToast);
@@ -2501,6 +2506,14 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             r = tileRects[shelfIndex];
         }
         click.open();
+        if (it.kind == HomeApps.RESUME) {
+            // "Continuar viendo": opened again the way it was the first time.
+            if ("app".equals(it.uri)) {
+                AppSearch.run(getContext(), it.label, this::showToast);
+                return;
+            }
+            it = HomeApps.app("com.stremio.one", "Stremio", "stremio:///search?search=" + android.net.Uri.encode(it.label));
+        }
         if (it.kind == HomeApps.CLEAN) {
             AppSearch.freeMemory(getContext(), this::showToast);
             return;
@@ -3050,6 +3063,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         boolean own = !picksOn() && Photos.on(getContext());
         Backdrop b = own ? Photos.backdrop(getContext(), ownReady) : cards.isEmpty() ? null : recs.backdrop(apple() ? heroPick() : cards.get(0));
         if (apple() && b != null) shownPick = heroPick();
+        if (apple()) {
+            // The next two photos, downloaded and built ahead: even the first change is instant.
+            List<Recs.Pick> all = heroPicks();
+            for (int j = 1; j <= 2 && j < all.size(); j++) recs.backdrop(all.get(Math.floorMod(heroIndex + j, all.size())));
+        }
         if (b != null || (cards.isEmpty() && !own)) showBackdrop(b);
         heroDirty = true;
         spoken.focusMoved();    // new picks under the focused card

@@ -1,5 +1,5 @@
 {
-  "_comment": "Ready-made setup for Xuper (com.lite.fczx 4.34) on a 1920x1080 screen. For another app, see search-app.example.json.",
+  "_comment": "Ready-made setup, tested on a 1920x1080 screen. For another app, see search-app.example.json.",
   "label": "Xuper",
   "package": "com.lite.fczx",
   "launch_activity": "com.interactive.brasiliptv.ui.activity.WelcomeActivity",

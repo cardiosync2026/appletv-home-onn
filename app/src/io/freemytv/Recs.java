@@ -292,11 +292,11 @@ final class Recs {
     }
 
     /** A title opened from the home screen ("Ver en …", "Stremio"): it shapes the next feed. Kept on the TV only. */
-    void remember(Pick p) {
+    void remember(Pick p, String via) {
         if (p == null || p.id == 0) return;
         try {
             JSONArray old = new JSONArray(cache.getString("history", "[]")), out = new JSONArray();
-            out.put(new org.json.JSONObject().put("id", p.id).put("kind", p.kind).put("title", p.title));
+            out.put(new org.json.JSONObject().put("id", p.id).put("kind", p.kind).put("title", p.title).put("via", via));
             for (int i = 0; i < old.length() && out.length() < 10; i++) {
                 org.json.JSONObject o = old.getJSONObject(i);
                 if (o.optInt("id") != p.id) out.put(o);

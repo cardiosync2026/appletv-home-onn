@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 final class HomeApps {
     private HomeApps() {}
 
-    static final int APP = 0, LIVE_TV = 1, INPUT = 2, ALL_APPS = 3, SETTINGS = 4, ANDROID_SETTINGS = 5, DEVICE = 6, NETWORK = 8, CLEAN = 9, TASTE = 10, COUNTRY = 11;
+    static final int APP = 0, LIVE_TV = 1, INPUT = 2, ALL_APPS = 3, SETTINGS = 4, ANDROID_SETTINGS = 5, DEVICE = 6, NETWORK = 8, CLEAN = 9, TASTE = 10, COUNTRY = 11, RESUME = 12;
     /** The "HDMI Inputs" button: opens the bottom drawer on the inputs (the home screen handles it). */
     static final int INPUTS = 7;
     /** Image size of each card (16:9; on screen it shows up to ~330 px wide). */
@@ -315,6 +315,25 @@ final class HomeApps {
     /** Free My TV settings, in the corner of the home screen. */
     static Item settings() {
         return shortcut(SETTINGS, "settings", Ui.tr("Settings"), "settings");
+    }
+
+    /**
+     * "Continuar viendo": the last three titles opened from the home screen (Recs.remember), newest first. The item's
+     * uri says how it was opened ("stremio" or "app"), so OK opens it the same way again.
+     */
+    static List<Item> resume(Context c) {
+        List<Item> out = new ArrayList<>();
+        try {
+            org.json.JSONArray h = new org.json.JSONArray(c.getSharedPreferences("recs", Context.MODE_PRIVATE).getString("history", "[]"));
+            for (int i = 0; i < h.length() && out.size() < 3; i++) {
+                org.json.JSONObject o = h.getJSONObject(i);
+                Item it = shortcut(RESUME, "resume:" + o.optInt("id"), o.optString("title"), "play");
+                it.uri = o.optString("via", "stremio");
+                out.add(it);
+            }
+        } catch (org.json.JSONException ignored) {
+        }
+        return out;
     }
 
     /** Shortcuts in the bottom drawer. */
