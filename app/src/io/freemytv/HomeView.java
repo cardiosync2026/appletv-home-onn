@@ -1861,6 +1861,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         }
         c.save();
         c.translate(cell.left, cell.top);
+        fill.setColor(0xFF000000);   // opaque: a shortcut's half-focused white left its alpha here and lit the card up
         fill.setShader(resumeFade);
         tmp.set(0, 0, cell.width(), cell.height());
         c.drawRoundRect(tmp, r, r, fill);
