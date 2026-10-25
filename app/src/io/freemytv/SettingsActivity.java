@@ -140,7 +140,7 @@ public class SettingsActivity extends Activity {
         private static final float LIST_X = 160, LIST_R = 1760, LIST_TOP = 236, ROW_GAP = 14, CHOICE_H = 108;
         // The main menu: eight rows, then the comparison, the picks (with the Watchmode credit) and two notices, all on
         // one 1080 px screen: the rows share the 462 px that seven took.
-        private static final float MAIN_TOP = 236, ROW_H = 74, MAIN_GAP = 14;
+        private static final float MAIN_TOP = 210, ROW_H = 64, MAIN_GAP = 10;
         private static final int AMBER = 0xFFFFC266, INK = 0xFF1C1C1E;
 
         private final SettingsActivity activity;
@@ -255,7 +255,8 @@ public class SettingsActivity extends Activity {
                     }
                     String[] names = {Ui.tr("Screensaver, preview"), Ui.tr("Home Settings"),
                             Ui.tr("Shelf"), Ui.tr("Top Buttons"), Ui.tr("Remote Buttons"), Ui.tr("Sleep Timer"),
-                            Ui.tr("TV Settings")};
+                            Ui.tr("TV Settings"), "Bloquear anuncios (DNS), " + yesNo(AdBlock.dnsOn(getContext())),
+                            "YouTube sin anuncios, " + yesNo(AdBlock.youtubeNoAds(getContext()))};
                     return row - 1 < names.length ? names[row - 1] : "";
                 }
                 case HOME_CHOICE: {
@@ -388,7 +389,7 @@ public class SettingsActivity extends Activity {
 
         private int rowCount() {
             switch (screen) {
-                case MAIN: return 8;
+                case MAIN: return 10;
                 case HOME_CHOICE: return 2;
                 case HOME_SETTINGS: return Math.min(SETTINGS_VISIBLE, settingLabels().length);
                 case PICKER: return Math.min(PICK_VISIBLE, pickLabels.size());
@@ -432,8 +433,11 @@ public class SettingsActivity extends Activity {
             String mode = freeActive() ? "Nueva" : Ui.tr("Original");
             String[] labels = {Ui.tr("Home Screen"), Ui.tr("Screensaver"),
                     Ui.tr("Home Settings"), Ui.tr("Shelf"), Ui.tr("Top Buttons"),
-                    Ui.tr("Remote Buttons"), Ui.tr("Sleep Timer"), Ui.tr("TV Settings")};
-            String[] values = {working ? "" : mode, Ui.tr("Preview"), "", "", "", "", "", ""};
+                    Ui.tr("Remote Buttons"), Ui.tr("Sleep Timer"), Ui.tr("TV Settings"),
+                    "Bloquear anuncios (DNS)", "YouTube sin anuncios"};
+            String wait = AdBlock.busy() ? "…" : null;
+            String[] values = {working ? "" : mode, Ui.tr("Preview"), "", "", "", "", "", "",
+                    wait != null ? wait : yesNo(AdBlock.dnsOn(getContext())), wait != null ? wait : yesNo(AdBlock.youtubeNoAds(getContext()))};
             for (int i = 0; i < labels.length; i++) {
                 float y = (MAIN_TOP + i * (ROW_H + MAIN_GAP)) * k;
                 rowRect.set(LIST_X * k, y, LIST_R * k, y + ROW_H * k);
@@ -447,7 +451,7 @@ public class SettingsActivity extends Activity {
                 if (off) {
                     rowValue.setColor(blend(0x591C1C1E, 0x591C1C1E, f));
                     c.drawText(Ui.tr("Unavailable"), right, base, rowValue);
-                } else if (i >= 2) {
+                } else if (i >= 2 && i <= 7) {
                     float cw = Symbols.width(getContext(), "chevron_right", 22 * k);
                     Symbols.draw(getContext(), c, "chevron_right", right - cw / 2, rowRect.centerY(), 22 * k, blend(0x661C1C1E, 0x991C1C1E, f));
                 } else if (i == 0 && working) {
@@ -778,6 +782,12 @@ public class SettingsActivity extends Activity {
         }
 
         /** Why row `i` can't be used here, for the person to read; null where it works. */
+        private static String yesNo(boolean on) { return on ? "Sí" : "No"; }
+
+        private void say(String text) {
+            Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
+        }
+
         private String unavailable(int i) {
             int n = rowCount();
             if (i < 0 || i >= n) return null;
@@ -1374,6 +1384,10 @@ public class SettingsActivity extends Activity {
                 pickScroll = 0;
                 screen = POWER;
                 focus = 0;
+            } else if (focus == 8) {
+                AdBlock.toggleDns(c, this::say, this::invalidate);
+            } else if (focus == 9) {
+                AdBlock.toggleYoutube(c, this::say, this::invalidate);
             } else {
                 activity.startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }

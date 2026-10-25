@@ -33,6 +33,12 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 - **Top bar:** the time, a Wi-Fi pill showing your network's name (it opens the Wi-Fi settings), and a **Free up
   memory** button that closes background apps and tells you how many MB it freed.
 - **Big animated shortcuts bar** (↓): all apps, settings, trends by country, my tastes and TV settings, in a row of large buttons that rise in a cascade, like LG's bar but with Apple's look.
+- **Two "no ads" switches in Settings** (each one Yes/No, reversible):
+  - **Block ads (DNS).** Android's Private DNS goes through AdGuard and blocks ads and trackers in other apps. DNS
+    can't block YouTube's ads, because they come from the same servers as the videos.
+  - **YouTube without ads.** Installs [SmartTube](https://github.com/yuliskov/SmartTube), an open-source YouTube
+    client for TV with no ads that skips sponsor segments, and puts it on the shelf in YouTube's place. Switch it off
+    and YouTube comes back. SmartTube isn't YouTube's official app.
 - **Light, full-width settings menu** in Apple TV's light style.
 - **Removed:** the weather and crypto cards, the promo rows and the clutter.
 
@@ -163,6 +169,12 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
 - **Barra superior:** la hora, una píldora de Wi-Fi con el nombre de tu red (abre los ajustes de Wi-Fi) y un botón
   **Liberar memoria** que cierra las apps en segundo plano y te dice cuántos MB liberó.
 - **Barra de accesos grande y animada** (↓): todas las apps, ajustes, tendencias por país, mis gustos y ajustes del TV, en una fila de botones grandes que suben en cascada, como la barra de LG pero con el estilo de Apple.
+- **Dos interruptores «sin anuncios» en Ajustes** (cada uno Sí/No, reversibles):
+  - **Bloquear anuncios (DNS).** El DNS privado de Android pasa por AdGuard y bloquea anuncios y rastreo en otras
+    apps. Un DNS no puede bloquear los anuncios de YouTube, porque salen de los mismos servidores que los videos.
+  - **YouTube sin anuncios.** Instala [SmartTube](https://github.com/yuliskov/SmartTube), un cliente de YouTube para
+    TV de código abierto, sin anuncios y que salta los patrocinios, y lo pone en el estante en lugar de YouTube. Si lo
+    apagas, YouTube vuelve. SmartTube no es la app oficial de YouTube.
 - **Menú de ajustes claro y de ancho completo**, en el estilo claro de Apple TV.
 - **Se quitó:** las tarjetas del clima y de criptomonedas, las filas de promociones y el desorden.
 

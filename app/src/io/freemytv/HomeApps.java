@@ -115,6 +115,8 @@ final class HomeApps {
         {"amediateka", "Амедиатека", "ru.amediateka", "E31E24", "", "1"},
         {"wink", "Wink", "ru.rt.video.app.tv", "FF5A1F", "", "1"},
         {"spotify", "Spotify", "com.spotify.tv.android", "1DB954", "", "1"},
+        {"smarttube", "SmartTube", "org.smarttube.stable", "FF0033", "", "1"},
+        {"smarttube", "SmartTube", "com.teamsmart.videomanager.tv", "FF0033", "", "1"},
         {"stremio", "Stremio", "com.stremio.one", "8A6CFF", "", "1"},
         {"downloader", "Downloader", "com.esaba.downloader", "F47B20", "", "1"},
     };
@@ -205,7 +207,19 @@ final class HomeApps {
     /** The shelf's packages in order: the user's list (Settings > Shelf), or the built-in one. */
     static List<String> shelfPackages(Context c) {
         List<String> custom = Prefs.shelf();
-        if (custom != null) return custom;
+        if (custom != null) {
+            // SmartTube changed its package name: a shelf saved with the old one points at the installed one.
+            String installed = AdBlock.smartTube(c);
+            if (installed != null) for (String old : AdBlock.SMARTTUBE) {
+                int at = custom.indexOf(old);
+                if (at >= 0 && !old.equals(installed)) {
+                    custom = new ArrayList<>(custom);
+                    custom.remove(installed);
+                    custom.set(custom.indexOf(old), installed);
+                }
+            }
+            return custom;
+        }
         List<String> out = new ArrayList<>();
         Set<String> keys = new HashSet<>();
         PackageManager pm = c.getPackageManager();
