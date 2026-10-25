@@ -5,7 +5,7 @@
 An Apple TV–style home screen for the **onn 4K Streaming Box** (Google TV 14). It's clean and fast, has no ads, and is
 built from source in about ten minutes.
 
-Adapted by **Juan Diego Andrés** ([@juandiegoandres](https://github.com/juandiegoandres)) from
+Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 [Free My TV](https://github.com/simbasjungles/free-my-tv) (MIT).
 
 | Device | Status |
@@ -137,7 +137,7 @@ API but is not endorsed or certified by TMDB.* Not affiliated with Apple, Google
 Una pantalla de inicio estilo **Apple TV** para el **onn 4K Streaming Box** (Google TV 14). Es limpia y rápida, no
 tiene anuncios y se compila desde el código en unos diez minutos.
 
-Adaptada por **Juan Diego Andrés** ([@juandiegoandres](https://github.com/juandiegoandres)) a partir de
+Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir de
 [Free My TV](https://github.com/simbasjungles/free-my-tv) (MIT).
 
 | Aparato | Estado |

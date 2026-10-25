@@ -416,7 +416,7 @@ public class SettingsActivity extends Activity {
             // Apple TV's settings: a plain dark background and, on the left, only a large grey gear.
             if (plainBg == null) {
                 plainBg = new Paint();
-                plainBg.setShader(new android.graphics.LinearGradient(0, 0, 0, getHeight(), 0xFFF2F2F7, 0xFFDCDCE1,
+                plainBg.setShader(new android.graphics.LinearGradient(0, 0, 0, getHeight(), 0xFFDCDCE0, 0xFFC9C9CE,
                         android.graphics.Shader.TileMode.CLAMP));
             }
             c.drawRect(0, 0, getWidth(), getHeight(), plainBg);
@@ -486,10 +486,9 @@ public class SettingsActivity extends Activity {
                 y += errorLayout.getLineBaseline(errorLayout.getLineCount() - 1) - errorLayout.getLineBaseline(0) + 46 * k;
             }
             // The comparison, the picks' status and the notices are left out: a clean list, as on Apple TV.
-            Paint credit = Ui.text(Ui.regular, 22 * k, 0x8C1C1C1E);
+            Paint credit = Ui.text(Ui.medium, 27 * k, 0xCC1C1C1E);
             credit.setTextAlign(Paint.Align.CENTER);
-            c.drawText("Apple TV Home para onn · adaptado por Juan Diego Andrés (github.com/juandiegoandres) · basado en Free My TV",
-                    w / 2f, h - 48 * k, credit);
+            c.drawText("Adaptado por @juandiegoandres · basado en Free My TV", w / 2f, h - 50 * k, credit);
         }
 
         /** Home screen picks: status, and the credit TMDB asks for. */
