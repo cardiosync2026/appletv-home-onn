@@ -15,5 +15,3 @@ __pycache__/
 .DS_Store
 tools/.i18n-cache.json
 
-# Your own "search in an app" setup (coordinates of your app)
-app/assets/search-app.json

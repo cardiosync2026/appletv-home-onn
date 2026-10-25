@@ -26,8 +26,9 @@ Adapted by **Juan Diego Andrés** ([@juandiegoandres](https://github.com/juandie
   - **My tastes.** A three-round test with classics and series that have a clear style, from very different genres:
     documentaries, biographies, horror, comedy, anime and more. Mark what you like and the backdrops follow your
     taste, mixed with new releases and trends.
-- **"Watch in Stremio" and "Watch in your app".** Press ↑ from the apps and the title's buttons open it directly. The
-  second button can drive any app that has its own search screen; you set it up once (see below).
+- **"Watch in Xuper" and "Watch in Stremio".** Press ↑ from the apps and the title's buttons open it directly. Xuper
+  has no links into a title, so the button opens it, types the title on Xuper's own keyboard and opens the result. It
+  can be set up for any other app with its own search screen (see below).
 - **Big, flat colour tiles** for your apps, with the focused app's name shown large, as on Apple TV.
 - **Top bar:** the time, a Wi-Fi pill showing your network's name (it opens the Wi-Fi settings), and a **Free up
   memory** button that closes background apps and tells you how many MB it freed.
@@ -37,9 +38,17 @@ Adapted by **Juan Diego Andrés** ([@juandiegoandres](https://github.com/juandie
 
 ![Title buttons](screenshots/home-buttons.jpg)
 
-| My tastes | Trends by country | Settings |
-|---|---|---|
-| ![Taste test](screenshots/taste-test.jpg) | ![Country](screenshots/country.jpg) | ![Settings](screenshots/settings.jpg) |
+| My tastes | Trends by country |
+|---|---|
+| ![Taste test](screenshots/taste-test.jpg) | ![Country](screenshots/country.jpg) |
+
+| Shortcuts bar (↓) | Settings |
+|---|---|
+| ![Drawer](screenshots/drawer.jpg) | ![Settings](screenshots/settings.jpg) |
+
+| "Watch in Xuper": the title typed for you | …and the movie, ready to play |
+|---|---|
+| ![Xuper search](screenshots/xuper-search.jpg) | ![Result](screenshots/search-in-app.jpg) |
 
 ## Lightweight
 
@@ -86,17 +95,20 @@ You need the onn on the same Wi-Fi as a computer (Mac, Linux or Windows).
   gets turned off. In YouTube, use *Link with TV code* instead.
 - **If the Wi-Fi was saved during first setup**, the switch asks you to forget the network and join it again first.
 
-## "Watch in your app" (optional)
+## "Watch in Xuper" (or another app)
 
 Some streaming apps have no links into a title. This button opens such an app, taps its search box, types the title on
 the app's own on-screen keyboard and opens the first result. Before every step it checks that the right screen is
 showing, so it never types into another app.
 
-1. Copy `app/assets/search-app.example.json` to `app/assets/search-app.json` (it's gitignored).
+It comes ready for **Xuper** (`app/assets/search-app.json`, tested with version 4.34). To use another app instead:
+
+1. Copy `app/assets/search-app.example.json` over `app/assets/search-app.json`.
 2. Fill in your app's package, its activities and the screen positions (on a 1920×1080 screen) of the search button,
    the keyboard, *search* and the first result. The easiest way is to let an AI assistant do it with the prompt below:
    it opens the app, takes screenshots and measures the positions.
-3. Build and install again. Without that file you only get the **Stremio** button.
+3. Build and install again. If you delete that file, you only get the **Stremio** button. If an app update moves its
+   screen around, measure the positions again.
 
 ## Quick start with an AI assistant
 
@@ -144,7 +156,8 @@ Adaptada por **Juan Diego Andrés** ([@juandiegoandres](https://github.com/juand
   - **Mis gustos.** Una prueba de tres rondas con clásicos y series de estilo marcado, de géneros muy distintos:
     documentales, biografías, terror, comedia, anime y más. Marcas lo que te gusta y los fondos siguen tus gustos,
     mezclados con estrenos y tendencias.
-- **«Ver en Stremio» y «Ver en tu app».** Presiona ↑ desde las apps y los botones del título lo abren directamente. El
+- **«Ver en Xuper» y «Ver en Stremio».** Presiona ↑ desde las apps y los botones del título lo abren directamente. Xuper
+  no tiene enlaces a un título, así que el botón la abre, escribe el título en su teclado y abre el resultado. El
   segundo botón puede manejar cualquier app que tenga su propia pantalla de búsqueda; se configura una vez (ver abajo).
 - **Mosaicos grandes de color plano** para tus apps, con el nombre de la app seleccionada en grande, como en Apple TV.
 - **Barra superior:** la hora, una píldora de Wi-Fi con el nombre de tu red (abre los ajustes de Wi-Fi) y un botón
@@ -189,17 +202,20 @@ Necesitas el onn en la misma red Wi-Fi que un computador (Mac, Linux o Windows).
 - **Si el Wi-Fi se guardó durante la configuración inicial**, el cambio te pide primero olvidar la red y volver a
   conectarte.
 
-## «Ver en tu app» (opcional)
+## «Ver en Xuper» (u otra app)
 
 Algunas apps de streaming no tienen enlaces directos a un título. Este botón abre esa app, toca su buscador, escribe
 el título en el teclado de la propia app y abre el primer resultado. Antes de cada paso revisa que esté en la
 pantalla correcta, así que nunca escribe en otra app.
 
-1. Copia `app/assets/search-app.example.json` a `app/assets/search-app.json` (está en `.gitignore`).
+Viene lista para **Xuper** (`app/assets/search-app.json`, probada con la versión 4.34). Para usar otra app:
+
+1. Copia `app/assets/search-app.example.json` encima de `app/assets/search-app.json`.
 2. Llena el paquete de tu app, sus actividades y las posiciones en pantalla (en 1920×1080) del botón de búsqueda, el
    teclado, *buscar* y el primer resultado. Lo más fácil es pedírselo a un asistente de IA con el prompt de arriba: él
    abre la app, toma capturas y mide las posiciones.
-3. Compila e instala de nuevo. Sin ese archivo solo aparece el botón **Stremio**.
+3. Compila e instala de nuevo. Si borras ese archivo, solo aparece el botón **Stremio**. Si una actualización de la app
+   mueve su pantalla, vuelve a medir las posiciones.
 
 ## Inicio rápido con un asistente de IA
 
