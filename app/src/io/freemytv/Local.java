@@ -39,10 +39,46 @@ final class Local {
         load(app);
     }
 
+    /**
+     * The folder on the TV that keeps your additions: copied there from the APK's assets the first time, so an update
+     * from GitHub (whose APK has none) keeps them.
+     */
+    static java.io.File dir(Context c) {
+        return new java.io.File(c.getFilesDir(), "local");
+    }
+
+    private static void copyFromAssets(Context c) {
+        java.io.File dir = dir(c), logos = new java.io.File(dir, "logos");
+        try {
+            String[] names = c.getAssets().list("local/logos");
+            try (InputStream probe = c.getAssets().open("local/apps.json")) {
+                //noinspection ResultOfMethodCallIgnored
+                logos.mkdirs();
+                copy(probe, new java.io.File(dir, "apps.json"));
+            }
+            for (String n : names == null ? new String[0] : names) {
+                try (InputStream in = c.getAssets().open("local/logos/" + n)) {
+                    copy(in, new java.io.File(logos, n));
+                }
+            }
+        } catch (Exception ignored) {
+            // This APK carries no local folder (a GitHub release): whatever is on the TV stays.
+        }
+    }
+
+    private static void copy(InputStream in, java.io.File to) throws java.io.IOException {
+        try (java.io.FileOutputStream out = new java.io.FileOutputStream(to)) {
+            byte[] b = new byte[16384];
+            int n;
+            while ((n = in.read(b)) > 0) out.write(b, 0, n);
+        }
+    }
+
     private static synchronized void load(Context c) {
         if (loaded || c == null) return;
         loaded = true;
-        try (InputStream in = c.getAssets().open("local/apps.json")) {
+        copyFromAssets(c);
+        try (InputStream in = new java.io.FileInputStream(new java.io.File(dir(c), "apps.json"))) {
             byte[] b = new byte[in.available()];
             int n = in.read(b);
             JSONObject o = new JSONObject(new String(b, 0, Math.max(0, n), StandardCharsets.UTF_8));

@@ -1218,8 +1218,9 @@ final class HomeApps {
         try {
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;
-            String path = has(c, "local/logos/" + key + ".png") ? "local/logos/" + key + ".png" : "logos/" + key + ".png";
-            try (InputStream in = c.getAssets().open(path)) {
+            java.io.File local = new java.io.File(Local.dir(c), "logos/" + key + ".png");   // your own logos, on the TV
+            String path = "logos/" + key + ".png";
+            try (InputStream in = local.exists() ? new java.io.FileInputStream(local) : c.getAssets().open(path)) {
                 BitmapFactory.decodeStream(in, null, bounds);
             }
             BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -1227,7 +1228,7 @@ final class HomeApps {
             int largest = Math.max(bounds.outWidth, bounds.outHeight);
             while (largest / (opts.inSampleSize * 2) >= 640) opts.inSampleSize *= 2;
             Bitmap b;
-            try (InputStream in = c.getAssets().open(path)) {
+            try (InputStream in = local.exists() ? new java.io.FileInputStream(local) : c.getAssets().open(path)) {
                 b = BitmapFactory.decodeStream(in, null, opts);
             }
             if (b == null) return null;
