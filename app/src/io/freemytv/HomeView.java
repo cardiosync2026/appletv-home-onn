@@ -1639,6 +1639,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         for (int i = 0; same && i < list.size(); i++) {
             same = list.get(i).key.equals(drawerItems.get(i).key) && list.get(i).connected == drawerItems.get(i).connected;
         }
+        for (HomeApps.Item it : list) {
+            Bitmap art = it.kind == HomeApps.RESUME && it.number != null ? resumeArt.get(it.number) : null;
+            if (art != null) it.setTile(art);
+        }
         drawerItems = list;
         drawerInputs = inputs;
         if (drawerFocus.length != list.size()) {
@@ -1667,6 +1671,27 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float th = (bare ? 196 : ROW_H) * k;
         if (bare) left = (w - (n * tw + Math.max(0, n - groups) * gap + (groups - 1) * groupGap)) / 2f;
         float x = left, top = (bare ? ROW_TOP + 110 : ROW_TOP) * k;
+        int resumes = resumeCount();
+        if (bare && resumes > 0) {
+            // "Continuar viendo": big cards with the title's picture, then the shortcuts in a row below.
+            float cw = 420 * k, ch = 236 * k, cg = 36 * k, cy = (ROW_TOP + 10) * k;
+            for (int i = 0; i < resumes; i++) {
+                float cx = MARGIN * k + i * (cw + cg);
+                drawerRects[i].set(cx, cy, cx + cw, cy + ch);
+                snap(drawerRects[i]);
+                loadResumeArt(drawerItems.get(i), Math.round(cw), Math.round(ch));
+            }
+            int rest = n - resumes;
+            float sw = Math.min(250 * k, ((CONTENT_R - MARGIN) * k - Math.max(0, rest - 1) * 24 * k) / Math.max(1, rest)), sh = 150 * k;
+            float sy = cy + ch + 86 * k;
+            for (int i = resumes; i < n; i++) {
+                float sx = MARGIN * k + (i - resumes) * (sw + 24 * k);
+                drawerRects[i].set(sx, sy, sx + sw, sy + sh);
+                snap(drawerRects[i]);
+            }
+            th = sh;
+            n = 0;     // laid out already
+        }
         for (int i = 0; i < n; i++) {
             if (i == drawerInputs && i > 0) x += groupGap - gap;
             drawerRects[i].set(x, top, x + tw, top + th);
@@ -1748,7 +1773,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float titleBase = drawerRects.length > 0 ? drawerRects[0].top - 26 * k : ROW_TITLE * k;
         if (drawerInputs > 0) c.drawText(drawerItems.get(0).kind == HomeApps.RESUME ? "Continuar viendo" : Ui.tr("Inputs"),
                 drawerRects[0].left + 4 * k, titleBase, rowTitle);
-        if (drawerInputs < drawerItems.size()) c.drawText(Ui.tr("Shortcuts"), drawerRects[drawerInputs].left + 4 * k, titleBase, rowTitle);
+        if (drawerInputs < drawerItems.size()) c.drawText(Ui.tr("Shortcuts"), drawerRects[drawerInputs].left + 4 * k,
+                drawerRects[drawerInputs].top - 26 * k, rowTitle);
         int top = -1;
         for (int i = 0; i < drawerItems.size(); i++) if (drawerFocus[i].value > 0.02f && (top < 0 || drawerFocus[i].value > drawerFocus[top].value)) top = i;
         for (int i = 0; i < drawerItems.size(); i++) if (i != top) drawDrawerTile(c, i);
@@ -1768,6 +1794,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         int saveAlpha = c.saveLayerAlpha(null, Math.round(255 * Ui.clamp(rise * 1.4f)));
         cell.set(cx - base.width() * s / 2, cy - base.height() * s / 2, cx + base.width() * s / 2, cy + base.height() * s / 2);
         float r = 20 * k * s;
+        if (it.kind == HomeApps.RESUME) {
+            drawResumeCard(c, it, f, r);
+            c.restoreToCount(saveAlpha);
+            return;
+        }
         if (f > 0.01f) {
             tmp.set(cell);
             tmp.offset(0, 12 * k * f);
@@ -1794,6 +1825,86 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         c.drawText(label, cx, cell.top + cell.height() * 0.8f, drawerLabel);
         drawerLabel.setTextSize(23 * k);
         c.restoreToCount(saveAlpha);
+    }
+
+    /** A "Continuar viendo" card: the title's picture, a dark fade at the bottom and its name; focused, a white rim. */
+    private void drawResumeCard(Canvas c, HomeApps.Item it, float f, float r) {
+        tmp.set(cell);
+        tmp.offset(0, (8 + 12 * f) * k);
+        shadow.setColor(Ui.alpha(0xFF000000, 0.25f + 0.25f * f));
+        shadows.draw(c, tmp, r, SHADOW_BLUR * k, shadow);
+        if (it.tile != null) {
+            roundImage(c, it.tile, it.tileShader, cell, r);
+        } else {
+            fill.setShader(null);
+            fill.setColor(0xFF2C2C30);
+            c.drawRoundRect(cell, r, r, fill);
+        }
+        if (resumeFade == null || resumeFadeH != cell.height()) {
+            resumeFadeH = cell.height();
+            resumeFade = new LinearGradient(0, 0, 0, resumeFadeH, new int[] {0x00000000, 0x00000000, 0xCC000000},
+                    new float[] {0, 0.45f, 1}, Shader.TileMode.CLAMP);
+        }
+        c.save();
+        c.translate(cell.left, cell.top);
+        fill.setShader(resumeFade);
+        tmp.set(0, 0, cell.width(), cell.height());
+        c.drawRoundRect(tmp, r, r, fill);
+        fill.setShader(null);
+        c.restore();
+        fitPaint.set(heroBtnText);
+        fitPaint.setColor(WHITE);
+        fitPaint.setTextSize(28 * k);
+        String name = TextUtils.ellipsize(it.label, fitPaint, cell.width() - 40 * k, TextUtils.TruncateAt.END).toString();
+        c.drawText(name, cell.left + 22 * k, cell.bottom - 22 * k, fitPaint);
+        if (f > 0.01f) {
+            rim.setShader(null);
+            rim.setColor(Ui.alpha(0xFFFFFFFF, 0.95f * f));
+            rim.setStrokeWidth(4 * k);
+            c.drawRoundRect(cell, r, r, rim);
+        }
+    }
+
+    private Shader resumeFade;
+    private float resumeFadeH;
+    private final java.util.Set<String> resumeLoading = new java.util.HashSet<>();
+    /** The cards' pictures by title ("movie/123"): they outlive the drawer's list, which is rebuilt often. */
+    private final java.util.Map<String, Bitmap> resumeArt = new java.util.HashMap<>();
+
+    /** The card's picture, downloaded once (TMDB's w780) and scaled to the card; the drawer redraws when it lands. */
+    private void loadResumeArt(HomeApps.Item it, int w, int h) {
+        Bitmap cached = it.number == null ? null : resumeArt.get(it.number);
+        if (cached != null && it.tile == null) it.setTile(cached);
+        String key = it.number;
+        if (it.tile != null || key == null || !resumeLoading.add(key)) return;
+        String known = it.art, ref = it.number;
+        LOADER.execute(() -> {
+            String art = known;
+            try {
+                // Titles saved before the picture was kept: ask TMDB for it.
+                if (art == null || art.isEmpty()) art = TasteActivity.get("/" + ref + "?language=es-MX").optString("backdrop_path", null);
+                if (art == null || art.isEmpty() || "null".equals(art)) return;
+                java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL("https://image.tmdb.org/t/p/w780" + art).openConnection();
+                c.setConnectTimeout(8000);
+                c.setReadTimeout(15000);
+                Bitmap b;
+                try (java.io.InputStream in = c.getInputStream()) {
+                    b = android.graphics.BitmapFactory.decodeStream(in);
+                } finally {
+                    c.disconnect();
+                }
+                if (b == null) return;
+                Bitmap card = Bitmap.createScaledBitmap(b, w, h, true);
+                handler.post(() -> {
+                    resumeArt.put(ref, card);
+                    for (HomeApps.Item d : drawerItems) if (ref.equals(d.number)) d.setTile(card);
+                    drawerDirty = true;
+                    drawerLayer.invalidate();
+                });
+            } catch (Exception e) {
+                resumeLoading.remove(key);
+            }
+        });
     }
 
     /** Weather for your location: now (large), the next 6 hours or 5 days, and sunrise and sunset. */
@@ -2394,10 +2505,18 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 break;
             }
             default:
+                int resumes = resumeCount();
+                boolean inResume = drawerIndex < resumes;
                 if (dx != 0) {
-                    int next = Math.max(0, Math.min(drawerItems.size() - 1, drawerIndex + dx));
+                    // Two rows (the cards above, the shortcuts below): ← → stay in the row.
+                    int lo = resumes > 0 && !inResume ? resumes : 0, hi = resumes > 0 && inResume ? resumes - 1 : drawerItems.size() - 1;
+                    int next = Math.max(lo, Math.min(hi, drawerIndex + dx));
                     if (next == drawerIndex) return;
                     drawerIndex = next;
+                } else if (dy > 0 && inResume && resumes < drawerItems.size()) {
+                    drawerIndex = resumes + nearestFrom(drawerRects, resumes, drawerItems.size(), drawerRects[drawerIndex].centerX());
+                } else if (dy < 0 && resumes > 0 && !inResume) {
+                    drawerIndex = nearestFrom(drawerRects, 0, resumes, drawerRects[drawerIndex].centerX());
                 } else if (dy < 0) {
                     closeDrawer();
                 } else if (talkBack() && !widgets().isEmpty()) {
@@ -3066,7 +3185,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         if (apple()) {
             // The next two photos, downloaded and built ahead: even the first change is instant.
             List<Recs.Pick> all = heroPicks();
-            for (int j = 1; j <= 2 && j < all.size(); j++) recs.backdrop(all.get(Math.floorMod(heroIndex + j, all.size())));
+            for (int j = 1; j <= 2 && j < all.size(); j++) {
+                Recs.Pick next = all.get(Math.floorMod(heroIndex + j, all.size()));
+                recs.backdrop(next);
+                recs.logo(next);
+            }
         }
         if (b != null || (cards.isEmpty() && !own)) showBackdrop(b);
         heroDirty = true;
@@ -3200,7 +3323,16 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             heroTag.setColor(0xD9FFFFFF);
             c.drawText(tag, x, 150 * k, heroTag);
         }
-        c.drawText(title, x - Ui.leftBearing(heroTitle, title), 250 * k, heroTitle);
+        Bitmap logo = recs.logo(p);
+        if (logo != null) {
+            // The title's own logo, as on Apple TV: fits a 760×200 box, standing on the title's baseline.
+            float sc = Math.min(760 * k / logo.getWidth(), 200 * k / logo.getHeight());
+            float lw = logo.getWidth() * sc, lh = logo.getHeight() * sc;
+            tmp.set(x, 262 * k - lh, x + lw, 262 * k);
+            c.drawBitmap(logo, null, tmp, bitmapPaint);
+        } else {
+            c.drawText(title, x - Ui.leftBearing(heroTitle, title), 250 * k, heroTitle);
+        }
         if (p.meta != null && !p.meta.isEmpty()) c.drawText(p.meta, x, 304 * k, heroMeta);
         boolean es = Ui.language.startsWith("es");
         String appName = AppSearch.label(getContext());
@@ -3549,6 +3681,26 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         retarget(false);
         click.move();
         return true;
+    }
+
+    /** Index (from `from`) of the rect in [from, to) closest to x horizontally. */
+    private static int nearestFrom(RectF[] rects, int from, int to, float x) {
+        int best = 0;
+        float bestDistance = Float.MAX_VALUE;
+        for (int i = from; i < Math.min(to, rects.length); i++) {
+            float d = Math.abs(rects[i].centerX() - x);
+            if (d < bestDistance) {
+                bestDistance = d;
+                best = i - from;
+            }
+        }
+        return best;
+    }
+
+    private int resumeCount() {
+        int n = 0;
+        while (n < drawerItems.size() && drawerItems.get(n).kind == HomeApps.RESUME) n++;
+        return n;
     }
 
     private static int nearest(RectF[] rects, int count, float x) {

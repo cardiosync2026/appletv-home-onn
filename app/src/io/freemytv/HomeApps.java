@@ -67,6 +67,7 @@ final class HomeApps {
         String uri;         // opens this address in the app instead of the app's home (a title's page)
         Intent intent;      // DEVICE: the TV maker's own screen it opens
         String symbol;      // icon for the shortcuts and special cards
+        String art;         // RESUME: the title's TMDB backdrop path, for its card
         Bitmap tile;        // 16:9 card (apps and specials): set with setTile
         BitmapShader tileShader;   // the card's, for its rounded corners (made with the card, never while drawing)
         Bitmap logo;        // colored logo with no background (shelf); null = use the card
@@ -329,6 +330,8 @@ final class HomeApps {
                 org.json.JSONObject o = h.getJSONObject(i);
                 Item it = shortcut(RESUME, "resume:" + o.optInt("id"), o.optString("title"), "play");
                 it.uri = o.optString("via", "stremio");
+                it.art = o.optString("backdrop", null);
+                it.number = o.optString("kind", "movie") + "/" + o.optInt("id");   // to look the picture up when missing
                 out.add(it);
             }
         } catch (org.json.JSONException ignored) {

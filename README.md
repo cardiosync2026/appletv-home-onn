@@ -29,7 +29,8 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 - **"Watch in <app>" and "Watch in Stremio".** Press ↑ from the apps and the title's buttons open it directly. For an
   app with no links into a title, the button opens it, types the title on the app's own keyboard and opens the
   result. It comes set up for one app and can be pointed at any other with its own search screen (see below).
-- **Continue watching:** the last three titles you opened show first in the shortcuts bar (↓) and reopen the same way.
+- **The title's official logo** over the backdrop, as on Apple TV (Spanish when TMDB has it, otherwise English).
+- **Continue watching:** big cards with the picture of the last three titles you opened, above the shortcuts (↓). They reopen the same way.
 - **Big, flat colour tiles** for your apps, with the focused app's name shown large, as on Apple TV.
 - **Top bar:** the time, a Wi-Fi pill showing your network's name (it opens the Wi-Fi settings), and a **Free up
   memory** button that closes background apps and tells you how many MB it freed.
@@ -166,7 +167,8 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
 - **«Ver en <app>» y «Ver en Stremio».** Presiona ↑ desde las apps y los botones del título lo abren directamente. Para
   una app sin enlaces a un título, el botón la abre, escribe el título en su teclado y abre el resultado. El
   segundo botón puede manejar cualquier app que tenga su propia pantalla de búsqueda; se configura una vez (ver abajo).
-- **Continuar viendo:** los últimos tres títulos que abriste salen primero en la barra de accesos (↓) y se vuelven a abrir igual.
+- **El logo oficial del título** sobre el fondo, como en Apple TV (en español si TMDB lo tiene; si no, en inglés).
+- **Continuar viendo:** tarjetas grandes con la imagen de los últimos tres títulos que abriste, arriba de los accesos (↓). Se vuelven a abrir igual.
 - **Mosaicos grandes de color plano** para tus apps, con el nombre de la app seleccionada en grande, como en Apple TV.
 - **Barra superior:** la hora, una píldora de Wi-Fi con el nombre de tu red (abre los ajustes de Wi-Fi) y un botón
   **Liberar memoria** que cierra las apps en segundo plano y te dice cuántos MB liberó.

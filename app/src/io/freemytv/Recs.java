@@ -275,6 +275,54 @@ final class Recs {
 
     List<Pick> feed() { return feed; }
 
+    // MARK: - Title logos (TMDB's official artwork: Spanish first, then English, then language-free)
+
+    private final Map<Integer, Bitmap> logos = new HashMap<>();
+    private final java.util.Set<Integer> logosPending = new java.util.HashSet<>();
+
+    /** The title's logo, ready to draw, or null (still loading, or the title has none: then the text is drawn). */
+    Bitmap logo(Pick p) {
+        if (p == null || p.id == 0 || p.kind == null) return null;
+        int key = "tv".equals(p.kind) ? -p.id : p.id;
+        synchronized (logos) {
+            if (logos.containsKey(key)) return logos.get(key);
+            if (!logosPending.add(key)) return null;
+        }
+        io.execute(() -> {
+            Bitmap b = null;
+            try {
+                JSONArray all = get("/" + p.kind + "/" + p.id + "/images?include_image_language=es,en,null").optJSONArray("logos");
+                String best = null;
+                for (String lang : new String[] {"es", "en", "null"}) {
+                    for (int i = 0; best == null && all != null && i < all.length(); i++) {
+                        JSONObject l = all.getJSONObject(i);
+                        String path = l.optString("file_path"), iso = l.isNull("iso_639_1") ? "null" : l.optString("iso_639_1");
+                        if (iso.equals(lang) && path.endsWith(".png")) best = path;
+                    }
+                }
+                if (best != null) {
+                    HttpURLConnection c = (HttpURLConnection) new URL("https://image.tmdb.org/t/p/w500" + best).openConnection();
+                    c.setConnectTimeout(8000);
+                    c.setReadTimeout(15000);
+                    try (InputStream in = c.getInputStream()) {
+                        b = BitmapFactory.decodeStream(in);
+                    } finally {
+                        c.disconnect();
+                    }
+                }
+            } catch (Exception e) {
+                AppLog.w("logo: " + e.getMessage());
+            }
+            synchronized (logos) {
+                logos.put(key, b);
+                logosPending.remove(key);
+                if (logos.size() > 40) logos.remove(logos.keySet().iterator().next());
+            }
+            notifyListeners();
+        });
+        return null;
+    }
+
     /** The country whose trends the home screen shows (two letters), chosen in "País"; Colombia by default. */
     String country() {
         return cache.getString("country", "CO");
@@ -296,7 +344,7 @@ final class Recs {
         if (p == null || p.id == 0) return;
         try {
             JSONArray old = new JSONArray(cache.getString("history", "[]")), out = new JSONArray();
-            out.put(new org.json.JSONObject().put("id", p.id).put("kind", p.kind).put("title", p.title).put("via", via));
+            out.put(new org.json.JSONObject().put("id", p.id).put("kind", p.kind).put("title", p.title).put("via", via).put("backdrop", p.backdrop));
             for (int i = 0; i < old.length() && out.length() < 10; i++) {
                 org.json.JSONObject o = old.getJSONObject(i);
                 if (o.optInt("id") != p.id) out.put(o);
