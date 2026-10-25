@@ -140,7 +140,7 @@ public class SettingsActivity extends Activity {
         private static final float LIST_X = 160, LIST_R = 1760, LIST_TOP = 236, ROW_GAP = 14, CHOICE_H = 108;
         // The main menu: eight rows, then the comparison, the picks (with the Watchmode credit) and two notices, all on
         // one 1080 px screen: the rows share the 462 px that seven took.
-        private static final float MAIN_TOP = 210, ROW_H = 64, MAIN_GAP = 10;
+        private static final float MAIN_TOP = 200, ROW_H = 58, MAIN_GAP = 8;
         private static final int AMBER = 0xFFFFC266, INK = 0xFF1C1C1E;
 
         private final SettingsActivity activity;
@@ -256,7 +256,8 @@ public class SettingsActivity extends Activity {
                     String[] names = {Ui.tr("Screensaver, preview"), Ui.tr("Home Settings"),
                             Ui.tr("Shelf"), Ui.tr("Top Buttons"), Ui.tr("Remote Buttons"), Ui.tr("Sleep Timer"),
                             Ui.tr("TV Settings"), "Bloquear anuncios (DNS), " + yesNo(AdBlock.dnsOn(getContext())),
-                            "YouTube sin anuncios, " + yesNo(AdBlock.youtubeNoAds(getContext()))};
+                            "YouTube sin anuncios, " + yesNo(AdBlock.youtubeNoAds(getContext())),
+                            "Buscar actualización, versión " + Updater.version(getContext())};
                     return row - 1 < names.length ? names[row - 1] : "";
                 }
                 case HOME_CHOICE: {
@@ -389,7 +390,7 @@ public class SettingsActivity extends Activity {
 
         private int rowCount() {
             switch (screen) {
-                case MAIN: return 10;
+                case MAIN: return 11;
                 case HOME_CHOICE: return 2;
                 case HOME_SETTINGS: return Math.min(SETTINGS_VISIBLE, settingLabels().length);
                 case PICKER: return Math.min(PICK_VISIBLE, pickLabels.size());
@@ -434,10 +435,11 @@ public class SettingsActivity extends Activity {
             String[] labels = {Ui.tr("Home Screen"), Ui.tr("Screensaver"),
                     Ui.tr("Home Settings"), Ui.tr("Shelf"), Ui.tr("Top Buttons"),
                     Ui.tr("Remote Buttons"), Ui.tr("Sleep Timer"), Ui.tr("TV Settings"),
-                    "Bloquear anuncios (DNS)", "YouTube sin anuncios"};
+                    "Bloquear anuncios (DNS)", "YouTube sin anuncios", "Buscar actualización"};
             String wait = AdBlock.busy() ? "…" : null;
             String[] values = {working ? "" : mode, Ui.tr("Preview"), "", "", "", "", "", "",
-                    wait != null ? wait : yesNo(AdBlock.dnsOn(getContext())), wait != null ? wait : yesNo(AdBlock.youtubeNoAds(getContext()))};
+                    wait != null ? wait : yesNo(AdBlock.dnsOn(getContext())), wait != null ? wait : yesNo(AdBlock.youtubeNoAds(getContext())),
+                    Updater.busy() ? "…" : "Versión " + Updater.version(getContext())};
             for (int i = 0; i < labels.length; i++) {
                 float y = (MAIN_TOP + i * (ROW_H + MAIN_GAP)) * k;
                 rowRect.set(LIST_X * k, y, LIST_R * k, y + ROW_H * k);
@@ -1388,6 +1390,8 @@ public class SettingsActivity extends Activity {
                 AdBlock.toggleDns(c, this::say, this::invalidate);
             } else if (focus == 9) {
                 AdBlock.toggleYoutube(c, this::say, this::invalidate);
+            } else if (focus == 10) {
+                Updater.check(c, this::say, this::invalidate);
             } else {
                 activity.startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }

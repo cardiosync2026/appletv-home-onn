@@ -342,7 +342,7 @@ public class TasteActivity extends Activity {
     }
 
     static JSONObject get(String path) throws Exception {
-        String key = Config.TMDB_KEY.trim();
+        String key = Prefs.tmdbKey();
         boolean bearer = key.startsWith("eyJ");
         String url = "https://api.themoviedb.org/3" + path + (bearer ? "" : "&api_key=" + key);
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();

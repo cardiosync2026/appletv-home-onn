@@ -89,6 +89,13 @@ final class HomeApps {
      * (YouTube); "white" = only the white of the art, for a white logo over a busy gradient (Kinopoisk); empty = the
      * art's colors as they are. Last, a visual size tweak for the logo. Edit freely.
      */
+    /** Your own apps (Local, app/assets/local/apps.json) first, then the built-in SHELF. */
+    private static List<String[]> table() {
+        List<String[]> out = new ArrayList<>(Local.apps(null));
+        out.addAll(java.util.Arrays.asList(SHELF));
+        return out;
+    }
+
     private static final String[][] SHELF = {
         {"netflix", "Netflix", "com.netflix.ninja", "E50914", "", "1"},
         {"youtube", "YouTube", "com.google.android.youtube.tv", "FF0033", "play", "1"},
@@ -201,7 +208,7 @@ final class HomeApps {
     }
 
     private static String[] known(String pkg) {
-        for (String[] d : SHELF) if (d[2].equals(pkg)) return d;
+        for (String[] d : table()) if (d[2].equals(pkg)) return d;
         return null;
     }
 
@@ -224,7 +231,7 @@ final class HomeApps {
         List<String> out = new ArrayList<>();
         Set<String> keys = new HashSet<>();
         PackageManager pm = c.getPackageManager();
-        for (String[] d : SHELF) {
+        for (String[] d : table()) {
             if (out.size() < FEW_APPS && !keys.contains(d[0]) && launchIntent(pm, d[2]) != null) {
                 keys.add(d[0]);
                 out.add(d[2]);
@@ -238,7 +245,7 @@ final class HomeApps {
         PackageManager pm = c.getPackageManager();
         List<String[]> out = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        for (String[] d : SHELF) if (launchIntent(pm, d[2]) != null && seen.add(d[2])) out.add(new String[] {d[2], d[1]});
+        for (String[] d : table()) if (launchIntent(pm, d[2]) != null && seen.add(d[2])) out.add(new String[] {d[2], d[1]});
         List<String[]> more = new ArrayList<>();
         for (String[] app : launchable(c)) {
             if (app[0].equals(c.getPackageName()) || HIDDEN.contains(app[0]) || !seen.add(app[0])) continue;
@@ -534,7 +541,7 @@ final class HomeApps {
         Set<String> skip = new HashSet<>();
         // A built-in app is skipped only while it is on the shelf: one the person took off must still be listed here.
         List<String> onShelf = shelfPackages(c);
-        for (String[] d : SHELF) if (onShelf.contains(d[2])) skip.add(d[2]);
+        for (String[] d : table()) if (onShelf.contains(d[2])) skip.add(d[2]);
         skip.addAll(java.util.Arrays.asList(LIVE_TV_APPS));
         skip.add(c.getPackageName());
         skip.addAll(HIDDEN);
@@ -1199,11 +1206,20 @@ final class HomeApps {
         return b;
     }
 
+    private static boolean has(Context c, String path) {
+        try (InputStream in = c.getAssets().open(path)) {
+            return in != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     private static Bitmap ownLogo(Context c, String key) {
         try {
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;
-            try (InputStream in = c.getAssets().open("logos/" + key + ".png")) {
+            String path = has(c, "local/logos/" + key + ".png") ? "local/logos/" + key + ".png" : "logos/" + key + ".png";
+            try (InputStream in = c.getAssets().open(path)) {
                 BitmapFactory.decodeStream(in, null, bounds);
             }
             BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -1211,7 +1227,7 @@ final class HomeApps {
             int largest = Math.max(bounds.outWidth, bounds.outHeight);
             while (largest / (opts.inSampleSize * 2) >= 640) opts.inSampleSize *= 2;
             Bitmap b;
-            try (InputStream in = c.getAssets().open("logos/" + key + ".png")) {
+            try (InputStream in = c.getAssets().open(path)) {
                 b = BitmapFactory.decodeStream(in, null, opts);
             }
             if (b == null) return null;

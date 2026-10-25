@@ -118,6 +118,16 @@ It comes set up and tested for one app (`app/assets/search-app.json`). To use an
 3. Build and install again. If you delete that file, you only get the **Stremio** button. If an app update moves its
    screen around, measure the positions again.
 
+## Updates and your own touches
+
+- **Check for updates** (Settings, last row) downloads the latest [release](https://github.com/juandiegoandres/appletv-home-onn/releases)
+  and installs it. Your TMDB key is kept in the TV's settings, so updates (which ship without a key) don't lose it.
+  Android only accepts an update signed with the same key as the version you have: if you built it yourself, keep
+  building it yourself (`git pull` and `./build.sh`).
+- **Your own apps and tiles** go in `app/assets/local/`, which is never committed (see `Local.java`):
+  `apps.json` adds apps with their tile colour, overrides tile colours (YouTube in white, say) and sets the starting
+  shelf, and `logos/<key>.png` holds their logos.
+
 ## Quick start with an AI assistant
 
 Paste this into **Claude Code, Codex, Gemini CLI or OpenCode**, opened in this folder:
@@ -232,6 +242,16 @@ Viene configurada y probada para una app (`app/assets/search-app.json`). Para us
    abre la app, toma capturas y mide las posiciones.
 3. Compila e instala de nuevo. Si borras ese archivo, solo aparece el botón **Stremio**. Si una actualización de la app
    mueve su pantalla, vuelve a medir las posiciones.
+
+## Actualizaciones y tus propios toques
+
+- **Buscar actualización** (Ajustes, última fila) descarga la última [versión publicada](https://github.com/juandiegoandres/appletv-home-onn/releases)
+  y la instala. Tu clave de TMDB queda guardada en el TV, así que las actualizaciones (que vienen sin clave) no la
+  borran. Android solo acepta una actualización firmada con la misma clave que la versión que tienes: si la compilaste
+  tú, sigue compilándola tú (`git pull` y `./build.sh`).
+- **Tus propias apps y mosaicos** van en `app/assets/local/`, que nunca se sube al repositorio (ver `Local.java`):
+  `apps.json` agrega apps con su color, cambia colores de mosaicos (YouTube en blanco, por ejemplo) y define el
+  estante inicial, y `logos/<clave>.png` guarda sus logos.
 
 ## Inicio rápido con un asistente de IA
 

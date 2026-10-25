@@ -8,5 +8,6 @@ public class App extends Application {
         super.onCreate();
         Prefs.init(this);
         Place.init(this);
+        Local.init(this);
     }
 }

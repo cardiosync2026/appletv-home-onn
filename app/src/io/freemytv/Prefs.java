@@ -108,6 +108,13 @@ final class Prefs {
             sp().edit().putBoolean("weather", false).putBoolean("my_defaults_3", true).apply();
             version++;
         }
+        if (!sp().contains("shelf") && Local.shelf(null) != null) {   // your own starting shelf (app/assets/local)
+            setShelfRaw(Local.shelf(null));
+        }
+        // The TMDB key moves into the TV's settings: an update built without it (from GitHub) keeps working.
+        if (sp().getString("tmdb_key", "").isEmpty() && !Config.TMDB_KEY.trim().isEmpty()) {
+            sp().edit().putString("tmdb_key", Config.TMDB_KEY.trim()).apply();
+        }
         if (sp().getBoolean("my_defaults_1", false)) return;
         sp().edit().putString("theme", "dark")
                 .putBoolean("my_defaults_1", true).apply();
@@ -196,6 +203,22 @@ final class Prefs {
         for (String p : v.split(",")) if (!p.isEmpty()) out.add(p);
         return out;
     }
+
+    private static void setShelfRaw(List<String> packages) {
+        StringBuilder sb = new StringBuilder();
+        for (String p : packages) sb.append(sb.length() == 0 ? "" : ",").append(p);
+        sp().edit().putString("shelf", sb.toString()).apply();
+        version++;
+    }
+
+    /** The TMDB key: the one saved on the TV, else the one the app was built with. */
+    static String tmdbKey() {
+        myDefaults();
+        String k = sp().getString("tmdb_key", "");
+        return k.isEmpty() ? Config.TMDB_KEY.trim() : k;
+    }
+
+    static void setTmdbKey(String key) { put("tmdb_key", key.trim()); }
 
     static void setShelf(List<String> packages) {
         StringBuilder sb = new StringBuilder();
