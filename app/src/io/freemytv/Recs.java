@@ -61,7 +61,7 @@ final class Recs {
     private static final int ANIMATION = 16;
     private static final long LIST_EVERY = 6 * 3600_000L;
     /** Bump when what is saved for each title changes (the saved list is discarded and fetched again). */
-    private static final int CACHE_VERSION = 4;
+    private static final int CACHE_VERSION = 5;
     private static final int MANHA = 0, TARDE = 1, NOITE = 2;
     /** Service name on TMDB (part of the name, lowercase) → TV app (HomeApps key, package). */
     private static final String[][] SERVICES = {
@@ -210,7 +210,7 @@ final class Recs {
         Map<String, Boolean> have = new HashMap<>();   // one look per app, not per title (this runs every 15 s)
         for (Pick p : picks) {
             if ((kind == null || kind.equals(p.kind))
-                    && (!p.detailed || (p.pkg != null && have.computeIfAbsent(p.pkg, this::installed)))) list.add(p);   // app missing: skip
+                    && (!p.detailed || p.pkg == null || have.computeIfAbsent(p.pkg, this::installed))) list.add(p);   // app missing: skip
         }
         if (list.isEmpty()) return list;
         long hour = System.currentTimeMillis() / 3600_000L;
@@ -622,7 +622,10 @@ final class Recs {
         // None of the services we know is on the TV (or hide_services hides them all): no region would change that.
         boolean any = false;
         for (String[] s : SERVICES) any |= installed(s[2]);
-        if (!any) throw new IOException(NO_KNOWN_APPS);
+        if (!any) {
+            fetchGenericList(p);
+            return;
+        }
         // The services the TV has, by their TMDB ids in your region.
         Map<Integer, String[]> services = new HashMap<>();
         JSONArray providers = get("/watch/providers/movie?language=" + lang() + "&watch_region=" + REGION).getJSONArray("results");
@@ -631,7 +634,10 @@ final class Recs {
             String[] s = service(o.optString("provider_name"), o.optInt("provider_id"));
             if (s != null && installed(s[2])) services.put(o.getInt("provider_id"), s);
         }
-        if (services.isEmpty()) throw new IOException(NO_APPS);
+        if (services.isEmpty()) {
+            fetchGenericList(p);
+            return;
+        }
         StringBuilder ids = new StringBuilder();
         for (int id : services.keySet()) ids.append(ids.length() == 0 ? "" : "|").append(id);
         String common = "&language=" + lang() + "&watch_region=" + REGION + "&with_watch_monetization_types=flatrate&include_adult=false"
@@ -668,6 +674,47 @@ final class Recs {
         alternate(list, seen, hotMovies, hotShows, 24);
         alternate(list, seen, newMovies, newShows, 24);
         if (list.isEmpty()) throw new IOException("TMDB returned no recommendations");
+        picks = list;
+        period = p;
+        listAt = System.currentTimeMillis();
+        listLanguage = Ui.language;
+    }
+
+    /**
+     * Generic recommendations for TVs that have no recognised streaming-provider app.
+     * These are TMDB trends, not a promise that a title is available in a particular app.
+     */
+    private void fetchGenericList(int p) throws Exception {
+        List<Pick> hotMovies = new ArrayList<>(), hotShows = new ArrayList<>();
+
+        for (String kind : new String[] {"movie", "tv"}) {
+            JSONArray hot = get("/trending/" + kind + "/week?language=" + lang())
+                    .getJSONArray("results");
+            List<Pick> candidates = new ArrayList<>();
+
+            for (int i = 0; i < hot.length() && i < 20; i++) {
+                add(candidates, hot.getJSONObject(i), kind);
+            }
+
+            List<Pick> destination = kind.equals("movie") ? hotMovies : hotShows;
+            for (Pick pick : candidates) {
+                try {
+                    fetchDetails(pick);
+                    destination.add(pick);
+                } catch (Exception e) {
+                    AppLog.w("generic recommendation details: " + e.getMessage());
+                }
+            }
+        }
+
+        List<Pick> list = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        alternate(list, seen, hotMovies, hotShows, 24);
+
+        if (list.isEmpty()) {
+            throw new IOException("TMDB returned no generic recommendations");
+        }
+
         picks = list;
         period = p;
         listAt = System.currentTimeMillis();

@@ -1,18 +1,45 @@
 {
   "_comment": "Ready-made setup, tested on a 1920x1080 screen. For another app, see search-app.example.json.",
   "label": "Xuper",
-  "package": "com.lite.fczx",
+  "package": "com.android.mgstxNF",
   "launch_activity": "com.interactive.brasiliptv.ui.activity.WelcomeActivity",
   "home_activity": "com.main.ui.activity.HomeActivity",
   "search_activity": "com.vod.ui.activity.VodSearchActivity",
-  "search_button": [1248, 52],
-  "clear": [227, 206],
-  "submit": [479, 206],
-  "first_result": [773, 340],
-  "space": [474, 660],
+  "search_button": [
+    1248,
+    52
+  ],
+  "clear": [
+    227,
+    206
+  ],
+  "submit": [
+    479,
+    206
+  ],
+  "first_result": [
+    773,
+    340
+  ],
+  "space": [
+    474,
+    660
+  ],
   "keyboard": {
-    "rows": ["AÁBCDEÉ", "FGHIÍJK", "LMNÑOÓP", "QRSTUÚÜ", "VWXYZ"],
-    "first_key": [90, 300],
-    "step": [70, 90]
+    "rows": [
+      "AÁBCDEÉ",
+      "FGHIÍJK",
+      "LMNÑOÓP",
+      "QRSTUÚÜ",
+      "VWXYZ"
+    ],
+    "first_key": [
+      90,
+      300
+    ],
+    "step": [
+      70,
+      90
+    ]
   }
 }
