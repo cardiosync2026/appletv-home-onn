@@ -17,6 +17,8 @@ import android.widget.TextView;
 public class HomeActivity extends Activity {
     /** Opens All Apps (a remote's All Apps button, RemoteKeys). */
     static final String EXTRA_ALL_APPS = "io.freemytv.ALL_APPS";
+    /** From a remote button set to "Free up memory": back home, then the apps are closed. */
+    static final String EXTRA_CLEAN = "io.freemytv.CLEAN";
     private HomeView home;
     private int prefsVersion = Prefs.version;   // settings changed while we were away: start over
 
@@ -42,6 +44,7 @@ public class HomeActivity extends Activity {
         setContentView(home);
         getWindow().setBackgroundDrawable(null);
         if (getIntent().getBooleanExtra(EXTRA_ALL_APPS, false)) home.showAllApps();
+        if (getIntent().getBooleanExtra(EXTRA_CLEAN, false)) home.freeMemory();
     }
 
     @Override protected void onResume() {
@@ -66,6 +69,7 @@ public class HomeActivity extends Activity {
         if (home == null) return;
         if (intent.getBooleanExtra(EXTRA_ALL_APPS, false)) home.showAllApps();
         else home.reset(true);
+        if (intent.getBooleanExtra(EXTRA_CLEAN, false)) home.freeMemory();
     }
 
     @Override protected void onDestroy() {

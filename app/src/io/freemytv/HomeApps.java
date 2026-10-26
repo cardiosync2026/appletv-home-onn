@@ -126,6 +126,8 @@ final class HomeApps {
         {"smarttube", "SmartTube", "org.smarttube.stable", "FF0033", "", "1"},
         {"smarttube", "SmartTube", "com.teamsmart.videomanager.tv", "FF0033", "", "1"},
         {"stremio", "Stremio", "com.stremio.one", "8A6CFF", "", "1"},
+        {"nuvio", "Nuvio", "com.nuvio.tv", "1C1C1E", "", "1"},
+        {"nuvio", "Nuvio", "com.nuvio.app", "1C1C1E", "", "1"},
         {"downloader", "Downloader", "com.esaba.downloader", "F47B20", "", "1"},
     };
     /**
@@ -327,7 +329,7 @@ final class HomeApps {
 
     /**
      * "Continuar viendo": the last three titles opened from the home screen (Recs.remember), newest first. The item's
-     * uri says how it was opened ("stremio" or "app"), so OK opens it the same way again.
+     * uri says how it was opened ("stremio", "nuvio" or "app"), so OK opens it the same way again.
      */
     static List<Item> resume(Context c) {
         List<Item> out = new ArrayList<>();
@@ -383,6 +385,32 @@ final class HomeApps {
         it.pkg = pkg;
         it.label = label;
         return it;
+    }
+
+    /** Nuvio's TV build (GitHub) and its Play Store build. */
+    private static final String[] NUVIO = {"com.nuvio.tv", "com.nuvio.app"};
+
+    private static String nuvio(Context c) {
+        for (String pkg : NUVIO) if (launchIntent(c.getPackageManager(), pkg) != null) return pkg;
+        return null;
+    }
+
+    /**
+     * The apps the hero opens a title in, after "Ver en <tu app>": "nuvio" (straight to the title's page) and
+     * "stremio" (a search for its name), whichever are installed; Stremio alone when neither is.
+     */
+    static List<String> watchApps(Context c) {
+        List<String> out = new ArrayList<>();
+        if (nuvio(c) != null) out.add("nuvio");
+        if (out.isEmpty() || launchIntent(c.getPackageManager(), "com.stremio.one") != null) out.add("stremio");
+        return out;
+    }
+
+    /** A title opened in Nuvio (by its TMDB id: nuvio://tmdb/movie/603, nuvio://tmdb/tv/1399) or in Stremio. */
+    static Item watchIn(Context c, String via, String kind, int id, String title) {
+        String pkg = "nuvio".equals(via) && id != 0 ? nuvio(c) : null;
+        if (pkg != null) return app(pkg, "Nuvio", "nuvio://tmdb/" + ("tv".equals(kind) ? "tv" : "movie") + "/" + id);
+        return app("com.stremio.one", "Stremio", "stremio:///search?search=" + android.net.Uri.encode(title));
     }
 
     /** For the bottom drawer: live TV and every HDMI input (the ones with no device are shown dimmed). */

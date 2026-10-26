@@ -166,6 +166,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         TILE_STYLE.put("appletv", new int[] {0xFF1C1C1E, 0xFF000000, 0});
         // This TV's apps, as tvOS-style colour tiles: a brand gradient with the logo on it.
         TILE_STYLE.put("stremio", new int[] {0xFF6B4CE6, 0xFF6B4CE6, 1});
+        TILE_STYLE.put("nuvio", new int[] {0xFF1C1C1E, 0xFF000000, 0});
         TILE_STYLE.put("downloader", new int[] {0xFFF57A1F, 0xFFF57A1F, 1});
         TILE_STYLE.put("youtube", new int[] {0xFF1B1D2B, 0xFF1B1D2B, 0});
     }
@@ -176,6 +177,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private Shader waitGradient;
     /** The pick shown full screen (Apple TV mode); it moves on by itself every 15 s, and with ← → when focused. */
     private int heroIndex, heroBtn;
+    /** The hero's buttons after "Ver en <tu app>" (HomeApps.watchApps), read with the apps, not on every frame. */
+    private List<String> watchApps = java.util.Collections.singletonList("stremio");
     private long heroUsedAt;
     /** The pick whose photo is on screen: its title is the one drawn, so they never disagree. */
     private Recs.Pick shownPick;
@@ -1061,9 +1064,15 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         return picksOn() && !cards.isEmpty();
     }
 
-    /** "Ver en <tu app>" (when search-app.json is set up) and "Stremio". */
+    /** "Ver en <tu app>" (when search-app.json is set up), then "Nuvio" and / or "Stremio". */
     private int heroButtons() {
-        return AppSearch.label(getContext()) == null ? 1 : 2;
+        return (AppSearch.label(getContext()) == null ? 0 : 1) + watchApps.size();
+    }
+
+    /** Which app the focused hero button opens: "app" (AppSearch), "nuvio" or "stremio". */
+    private String heroVia() {
+        int i = heroBtn - (AppSearch.label(getContext()) == null ? 0 : 1);
+        return i < 0 ? "app" : watchApps.get(Math.min(i, watchApps.size() - 1));
     }
 
     private Recs.Pick heroPick() {
@@ -2135,6 +2144,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     }
 
     /** All Apps from the remote's button. Coming back from another app, resume() opens it (it closes the sheet). */
+    /** "Liberar memoria" from a remote button (HomeActivity.EXTRA_CLEAN): the same as the top button. */
+    void freeMemory() {
+        AppSearch.freeMemory(getContext(), this::showToast);
+    }
+
     void showAllApps() {
         if (!running) {
             allAppsOnResume = true;
@@ -2351,8 +2365,15 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             final List<HomeApps.Item> d = drawerList(c);
             final List<HomeApps.Item> o = apps ? HomeApps.others(c) : null;
             final List<HomeApps.Item> top = apps ? HomeApps.topButtons() : null;   // they change with Prefs too
+            final List<String> watch = apps ? HomeApps.watchApps(c) : null;
             handler.post(() -> {
                 if (top != null) setLightButtons(top);
+                if (watch != null && !watch.equals(watchApps)) {
+                    watchApps = watch;
+                    heroBtn = Math.min(heroBtn, heroButtons() - 1);
+                    heroDirty = true;
+                    heroLayer.invalidate();
+                }
                 if (s != null) setShelf(s);
                 setStatusItems(st);
                 setDrawerItems(d);
@@ -2615,18 +2636,18 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             r = topRects[topIndex];
         } else if (zone == Z_CARDS) {
             if (apple()) {
-                // Everything opens in Stremio, searching for the title (it finds it in Spanish too).
+                // Nuvio opens the title's page; Stremio searches for the title (it finds it in Spanish too).
                 Recs.Pick p = shownPick != null ? shownPick : heroPick();
                 if (p == null) return;
-                boolean viaApp = heroBtn == 0 && AppSearch.label(getContext()) != null;
-                recs.remember(p, viaApp ? "app" : "stremio");
+                String via = heroVia();
+                recs.remember(p, via);
                 setDrawerItems(drawerList(getContext()));
-                if (heroBtn == 0 && AppSearch.label(getContext()) != null) {
+                if ("app".equals(via)) {
                     click.open();
                     AppSearch.run(getContext(), p.title, this::showToast);
                     return;
                 }
-                it = HomeApps.app("com.stremio.one", "Stremio", "stremio:///search?search=" + android.net.Uri.encode(p.title));
+                it = HomeApps.watchIn(getContext(), via, p.kind, p.id, p.title);
                 r = cardRects[0];
             } else {
             Recs.Pick p = cardIndex < cards.size() ? cards.get(cardIndex) : null;
@@ -2646,7 +2667,9 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
                 AppSearch.run(getContext(), it.label, this::showToast);
                 return;
             }
-            it = HomeApps.app("com.stremio.one", "Stremio", "stremio:///search?search=" + android.net.Uri.encode(it.label));
+            String[] kindId = it.number.split("/");   // "movie/603"
+            int id = kindId.length == 2 && kindId[1].matches("\\d+") ? Integer.parseInt(kindId[1]) : 0;
+            it = HomeApps.watchIn(getContext(), it.uri, kindId[0], id, it.label);
         }
         if (it.kind == HomeApps.CLEAN) {
             AppSearch.freeMemory(getContext(), this::showToast);
@@ -3348,7 +3371,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         if (p.meta != null && !p.meta.isEmpty()) c.drawText(p.meta, x, 304 * k, heroMeta);
         boolean es = Ui.language.startsWith("es");
         String appName = AppSearch.label(getContext());
-        String[] labels = appName == null ? new String[] {"Stremio"} : new String[] {(es ? "Ver en " : "Watch in ") + appName, "Stremio"};
+        List<String> labelList = new ArrayList<>();
+        if (appName != null) labelList.add((es ? "Ver en " : "Watch in ") + appName);
+        for (String w : watchApps) labelList.add("nuvio".equals(w) ? "Nuvio" : "Stremio");
+        String[] labels = labelList.toArray(new String[0]);
         float bx = x;
         for (int i = 0; i < labels.length; i++) {
             float f = zone == Z_CARDS && heroBtn == i ? 1 : 0;

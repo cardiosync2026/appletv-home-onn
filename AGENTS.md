@@ -35,15 +35,17 @@ before you do it, and let them do the taps on the TV.
 - `AppSearch`: "Watch in your app" (taps driven by `search-app.json`) and "Free up memory".
 - `SettingsActivity`: the light, full-width settings menu.
 
-## Adding the onn TV Stick 2K (coming soon)
+## onn Full HD / 2K (tested, 2.5)
 
-Read first and change after:
+`onn. Full HD Streaming Device` (`onn_2k_gtv`, Amlogic, Google TV 14, 1.5 GB, armeabi-v7a). What it taught us:
 
-```bash
-adb shell getprop ro.product.model
-adb shell getprop ro.build.version.release
-adb shell cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.HOME
-```
-
-The stick has less RAM. Check the `Backdrop` sizes and the image cache cap (`images.size() > 14` in `Recs`) before
-promising 60 fps.
+- **Remote buttons** (`Vendor_0957_Product_0005.kl`): YouTube `BUTTON_3`, Netflix `BUTTON_4`, Disney+ `BUTTON_9`,
+  Paramount+ `BUTTON_10`. All are global keys (`dumpsys window policy`), so only `RemoteKeyService` sees them
+  (`RemoteKeys.ONN`). Read new remotes with `getevent -lt` on the remote's `/dev/input/event*`.
+- **Netflix clicks and squeals** on TVs without a soundbar: on Auto the box switches HDMI between PCM and a Dolby
+  bitstream per trailer. `TvAudio` ("Sonido") does what the TV's Sound → Digital Audio Format does: Android's
+  `encoded_surround_output`, Amlogic's `db_id_droidlogic_audio_digital_mode` (0 PCM, 1 Auto) and the HAL's
+  `hdmi_format` (0 PCM, **5** Auto; 1 is rejected). A short click on 2↔6 channel changes remains: firmware.
+- **Wi-Fi name:** Android hides the SSID without location, so the switch grants `ACCESS_FINE_LOCATION` through ADB.
+- The settings screen runs in `:home`: a crash there takes the home screen down, and after three the watchdog goes
+  back to Google TV's. Size per-row arrays (`pop`) to the longest list.

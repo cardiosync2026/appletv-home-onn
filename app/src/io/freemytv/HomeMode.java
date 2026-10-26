@@ -254,10 +254,19 @@ final class HomeMode {
     static void ensureRemoteServiceNow(Context app) {
         if (!RemoteKeys.supported() || !FREE.equals(state(app).optString("mode"))) return;
         try (Adb adb = Adb.connect(app, 10_000, null)) {
+            grantWifiName(adb);   // TVs switched before it was asked for: after an update, too
             remoteService(app, adb, true);
         } catch (IOException e) {
             AppLog.w("remote buttons service: " + e.getMessage());
         }
+    }
+
+    /**
+     * The Wi-Fi pill's network name: Android hides the SSID from apps without location (it reads "<unknown ssid>"), and
+     * a TV has no screen to allow it, so it's granted through ADB. Original leaves it: it only names the network.
+     */
+    private static void grantWifiName(Adb adb) throws IOException {
+        adb.shell("pm grant " + PKG + " android.permission.ACCESS_FINE_LOCATION");
     }
 
     private static final String REMOTE_SERVICE = PKG + "/" + PKG + ".RemoteKeyService";
@@ -413,6 +422,7 @@ final class HomeMode {
             s.put("mode", FREE).put("since", System.currentTimeMillis()).put("homeReverted", false)
                     .put("disabled", new JSONArray(sorted(disabled))).put("setupHome", setupHome);
             save(c, s);
+            grantWifiName(adb);
             if (RemoteKeys.supported()) {
                 try {
                     remoteService(c, adb, true);

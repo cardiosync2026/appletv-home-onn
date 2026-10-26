@@ -11,7 +11,7 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 | Device | Status |
 |---|---|
 | onn 4K Streaming Box (2023, Google TV 14) | ✅ Tested |
-| onn TV Stick 2K | 🔜 Coming soon |
+| onn Full HD / 2K Streaming Device (Google TV 14, 1.5 GB) | ✅ Tested |
 
 ![Home](screenshots/home.jpg)
 
@@ -29,6 +29,8 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 - **"Watch in <app>" and "Watch in Stremio".** Press ↑ from the apps and the title's buttons open it directly. For an
   app with no links into a title, the button opens it, types the title on the app's own keyboard and opens the
   result. It comes set up for one app and can be pointed at any other with its own search screen (see below).
+- **"Nuvio" button.** With [Nuvio](https://github.com/NuvioMedia/NuvioTV) installed, a third button opens the title's
+  own page in Nuvio (by its TMDB id, no typing). Continue watching reopens it there too.
 - **The title's official logo** over the backdrop, as on Apple TV (Spanish when TMDB has it, otherwise English).
 - **Continue watching:** big cards with the picture of the last three titles you opened, above the shortcuts (↓). They reopen the same way.
 - **Big, flat colour tiles** for your apps, with the focused app's name shown large, as on Apple TV.
@@ -41,6 +43,10 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
   - **YouTube without ads.** Installs [SmartTube](https://github.com/yuliskov/SmartTube), an open-source YouTube
     client for TV with no ads that skips sponsor segments, and puts it on the shelf in YouTube's place. Switch it off
     and YouTube comes back. SmartTube isn't YouTube's official app.
+- **The remote's app buttons, your way** (onn remotes): YouTube, Netflix, Disney+ and Paramount+ keep working with
+  the new home screen, and in *Settings → Remote buttons* each one can open any app, or **Free up memory**.
+- **Sound** (Settings, Amlogic boxes like the onn): *TV speakers* makes the box decode Dolby itself, so Netflix
+  trailers stop clicking and squealing on TVs without a soundbar; *Soundbar* (the default) sends Dolby and 5.1 through.
 - **Lite mode** (Settings): the same look without photos, logos or downloads, with the big clock in place of the backdrop. The home screen uses about 96 MB instead of 162 MB, which is less than Google TV's own home (135 MB).
 - **Light, full-width settings menu** in Apple TV's light style.
 - **Removed:** the weather and crypto cards, the promo rows and the clutter.
@@ -55,6 +61,10 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 |---|---|
 | ![Drawer](screenshots/drawer.jpg) | ![Settings](screenshots/settings.jpg) |
 
+| "Nuvio" next to Stremio | Remote buttons |
+|---|---|
+| ![Nuvio button](screenshots/home-nuvio.jpg) | ![Remote buttons](screenshots/remote-buttons.jpg) |
+
 | "Watch in <app>": the title typed for you | …and the movie, ready to play |
 |---|---|
 | ![App search](screenshots/app-search.jpg) | ![Result](screenshots/search-in-app.jpg) |
@@ -67,7 +77,7 @@ Adapted by **[@juandiegoandres](https://github.com/juandiegoandres)** from
 - To be honest about memory: with full-screen photos the home screen uses more RAM than the stock one (about 260 MB
   against 135 MB on the onn 4K, which has 2 GB). The **Free up memory** button gives that back when you need it.
 
-## Install (onn 4K)
+## Install (onn 4K, onn Full HD / 2K)
 
 You need the onn on the same Wi-Fi as a computer (Mac, Linux or Windows).
 
@@ -103,6 +113,9 @@ You need the onn on the same Wi-Fi as a computer (Mac, Linux or Windows).
 - The phone's **Cast button may stop working**, because Google's setup app (which holds the Chromecast credentials)
   gets turned off. In YouTube, use *Link with TV code* instead.
 - **If the Wi-Fi was saved during first setup**, the switch asks you to forget the network and join it again first.
+- **onn Full HD / 2K and Netflix:** even with *Sound → TV speakers*, Netflix can make a short click as it opens or
+  closes, when the box switches its HDMI output between 2 and 6 channels. That's the box's firmware and doesn't affect
+  playback.
 
 ## "Watch in <app>"
 
@@ -162,7 +175,7 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
 | Aparato | Estado |
 |---|---|
 | onn 4K Streaming Box (2023, Google TV 14) | ✅ Probado |
-| onn TV Stick 2K | 🔜 Próximamente |
+| onn Full HD / 2K Streaming Device (Google TV 14, 1,5 GB) | ✅ Probado |
 
 ## Qué trae de nuevo frente a Free My TV
 
@@ -178,6 +191,8 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
 - **«Ver en <app>» y «Ver en Stremio».** Presiona ↑ desde las apps y los botones del título lo abren directamente. Para
   una app sin enlaces a un título, el botón la abre, escribe el título en su teclado y abre el resultado. El
   segundo botón puede manejar cualquier app que tenga su propia pantalla de búsqueda; se configura una vez (ver abajo).
+- **Botón «Nuvio».** Con [Nuvio](https://github.com/NuvioMedia/NuvioTV) instalado, un tercer botón abre la ficha del
+  título en Nuvio (por su id de TMDB, sin teclear). «Continuar viendo» lo vuelve a abrir ahí.
 - **El logo oficial del título** sobre el fondo, como en Apple TV (en español si TMDB lo tiene; si no, en inglés).
 - **Continuar viendo:** tarjetas grandes con la imagen de los últimos tres títulos que abriste, arriba de los accesos (↓). Se vuelven a abrir igual.
 - **Mosaicos grandes de color plano** para tus apps, con el nombre de la app seleccionada en grande, como en Apple TV.
@@ -190,6 +205,12 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
   - **YouTube sin anuncios.** Instala [SmartTube](https://github.com/yuliskov/SmartTube), un cliente de YouTube para
     TV de código abierto, sin anuncios y que salta los patrocinios, y lo pone en el estante en lugar de YouTube. Si lo
     apagas, YouTube vuelve. SmartTube no es la app oficial de YouTube.
+- **Los botones de apps del control, a tu gusto** (controles onn): YouTube, Netflix, Disney+ y Paramount+ siguen
+  funcionando con el inicio nuevo, y en *Ajustes → Botones del control* cada uno puede abrir cualquier app, o
+  **Liberar memoria**.
+- **Sonido** (Ajustes, aparatos Amlogic como el onn): *Parlantes del TV* hace que el aparato decodifique el Dolby, así
+  los tráileres de Netflix dejan de dar chasquidos y pitidos en TVs sin barra de sonido; *Barra de sonido* (de fábrica)
+  deja pasar Dolby y 5.1.
 - **Modo ligero** (Ajustes): la misma estética sin fotos, logos ni descargas, con el reloj grande en lugar del fondo. El inicio usa unos 96 MB en vez de 162 MB, menos que el inicio de Google TV (135 MB).
 - **Menú de ajustes claro y de ancho completo**, en el estilo claro de Apple TV.
 - **Se quitó:** las tarjetas del clima y de criptomonedas, las filas de promociones y el desorden.
@@ -204,7 +225,7 @@ Adaptada por **[@juandiegoandres](https://github.com/juandiegoandres)** a partir
 - Siendo honestos con la memoria: con fotos a pantalla completa, el inicio usa más RAM que el original (unos 260 MB
   frente a 135 MB en el onn 4K, que tiene 2 GB). El botón **Liberar memoria** la recupera cuando la necesitas.
 
-## Instalación (onn 4K)
+## Instalación (onn 4K, onn Full HD / 2K)
 
 Necesitas el onn en la misma red Wi-Fi que un computador (Mac, Linux o Windows).
 
@@ -229,6 +250,9 @@ Necesitas el onn en la misma red Wi-Fi que un computador (Mac, Linux o Windows).
   que guarda las credenciales de Chromecast. En YouTube usa *Vincular con código de TV*.
 - **Si el Wi-Fi se guardó durante la configuración inicial**, el cambio te pide primero olvidar la red y volver a
   conectarte.
+- **onn Full HD / 2K y Netflix:** aun con *Sonido → Parlantes del TV*, Netflix puede dar un clic corto al abrir o
+  cerrar, cuando el aparato cambia la salida HDMI entre 2 y 6 canales. Es del firmware del aparato y no afecta la
+  reproducción.
 
 ## «Ver en <app>»
 

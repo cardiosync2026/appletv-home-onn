@@ -48,9 +48,18 @@ final class Prefs {
      */
     static final int KEY_HISENSE_PRIME = 295, KEY_HISENSE_YOUTUBE = KeyEvent.KEYCODE_BUTTON_3, KEY_HISENSE_DISNEY = 607,
             KEY_HISENSE_APPS = 284, KEY_HISENSE_SETTINGS = KeyEvent.KEYCODE_NOTIFICATION, KEY_HISENSE_PROFILE = 288;
+    /**
+     * The onn remote's app buttons (Vendor_0957_Product_0005.kl, read with getevent): global keys, so only the key
+     * filter sees them.
+     */
+    static final int KEY_ONN_YOUTUBE = KeyEvent.KEYCODE_BUTTON_3, KEY_ONN_NETFLIX = KeyEvent.KEYCODE_BUTTON_4,
+            KEY_ONN_DISNEY = KeyEvent.KEYCODE_BUTTON_9, KEY_ONN_PARAMOUNT = KeyEvent.KEYCODE_BUTTON_10;
     /** A button's value that opens this home screen's All Apps. */
     static final String ALL_APPS = HomeMode.PKG + "#all";
-    static final int[] KEYS = RemoteKeys.HISENSE ? new int[] {KEY_HISENSE_PRIME, KEY_HISENSE_YOUTUBE, KEY_HISENSE_DISNEY,
+    /** A button's value that frees memory (AppSearch.freeMemory) from the home screen. */
+    static final String CLEAN = HomeMode.PKG + "#clean";
+    static final int[] KEYS = RemoteKeys.ONN ? new int[] {KEY_ONN_YOUTUBE, KEY_ONN_NETFLIX, KEY_ONN_DISNEY, KEY_ONN_PARAMOUNT}
+            : RemoteKeys.HISENSE ? new int[] {KEY_HISENSE_PRIME, KEY_HISENSE_YOUTUBE, KEY_HISENSE_DISNEY,
                     KEY_HISENSE_APPS, KEY_HISENSE_SETTINGS, KEY_HISENSE_PROFILE}
             : RemoteKeys.SONY
             ? new int[] {KEY_SONY_CORE, KEY_SONY_NETFLIX, KEY_SONY_DISNEY, KEY_SONY_PRIME, KEY_SONY_YOUTUBE, KEY_SONY_CRUNCHYROLL,
@@ -276,6 +285,15 @@ final class Prefs {
     // MARK: - Remote buttons
 
     private static String defaultApp(int keyCode) {
+        if (RemoteKeys.ONN) {
+            switch (keyCode) {
+                case KEY_ONN_YOUTUBE: return "com.google.android.youtube.tv";
+                case KEY_ONN_NETFLIX: return "com.netflix.ninja";
+                case KEY_ONN_DISNEY: return "com.disney.disneyplus";
+                case KEY_ONN_PARAMOUNT: return "com.cbs.ott";
+                default: return "";
+            }
+        }
         if (RemoteKeys.HISENSE) {
             switch (keyCode) {
                 case KEY_HISENSE_PRIME: return "com.amazon.amazonvideo.livingroom";

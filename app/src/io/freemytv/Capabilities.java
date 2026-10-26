@@ -19,7 +19,7 @@ final class Capabilities {
 
     /** An option's needs. */
     static final String NEED_ADB = "adb", NEED_REMOTE_BUTTONS = "remote-buttons", NEED_OVERLAY = OVERLAY,
-            NEED_LIVE_TV = "live-tv";
+            NEED_LIVE_TV = "live-tv", NEED_TV_AUDIO = "tv-audio";
 
     /** null where this TV has what `need` names; else why not, and what would change it, for the person to read. */
     static String missing(Context c, String need) {
@@ -30,6 +30,9 @@ final class Capabilities {
                 return remoteButtons() ? null : Ui.tr("This TV's remote has no app buttons that Free My TV knows.");
             case NEED_OVERLAY:
                 return overlay(c) ? null : Ui.tr("This TV doesn't let apps show over other apps: the time left shows on the home screen.");
+            case NEED_TV_AUDIO:
+                if (!TvAudio.available(c)) return Ui.tr("Only on streamers with an Amlogic chip, like the onn.");
+                return adb(c) ? null : Ui.tr("Needs Free My TV mode: turn it on in Home Screen.");
             case NEED_LIVE_TV:
                 return HomeApps.liveTv(c) != null ? null : Ui.tr("This TV has no live TV (antenna or cable) to open.");
             default:
